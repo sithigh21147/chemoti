@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>化学暗記マスター</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --text: #1f2937;
+            --correct: #10b981;
+            --wrong: #ef4444;
+            --accent: #f59e0b;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 700px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            padding-bottom: 40px;
+            max-height: 95vh;
+            overflow: hidden;
+        }
+        
+        .scroll-container {
+             overflow-y: auto;
+             padding-right: 5px;
+             scrollbar-width: thin; 
+        }
+
+        h1, h2, h3 { text-align: center; margin: 0; color: var(--secondary); }
+        h1 { font-size: 1.5rem; }
+
+        .settings-group {
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9fafb;
+            margin-bottom: 10px;
+        }
+        
+        .input-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+        .group-filter-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .group-chip {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #fff;
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid #d1d5db;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        input[type="number"], select { padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 16px; }
+        input[type="number"] { width: 60px; text-align: center; }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+            transition: background 0.2s;
+            font-weight: bold;
+        }
+        .btn:hover { background-color: var(--secondary); }
+        .btn-outline { background-color: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-retry { background-color: var(--accent); }
+
+        /* 下線スタイル */
+        .color-underline {
+            display: inline-block;
+            border-bottom: 4px solid var(--u-color, transparent);
+            padding-bottom: 2px;
+            font-weight: bold;
+        }
+
+        .fc-display {
+            padding: 40px 10px;
+            text-align: center;
+            background-color: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        
+        .options-grid { display: flex; flex-direction: column; gap: 10px; }
+        .option-btn { background-color: white; border: 2px solid #e5e7eb; padding: 12px; border-radius: 8px; text-align: left; cursor: pointer; transition: all 0.2s; font-size: 0.9em; }
+
+        /* モード2・3用スタイル */
+        .coeff-area { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 5px; padding: 15px 5px; background-color: #f8fafc; border-radius: 8px; border: 2px dashed #cbd5e1; font-size: 1.1em; margin-bottom: 10px; }
+        .coeff-input { width: 45px !important; height: 40px; font-size: 1.2em; margin: 0 2px; background-color: #fff; text-align: center; cursor: pointer; border: 2px solid #d1d5db; border-radius: 6px; font-weight: bold; color: var(--primary); }
+        .active-input { border-color: var(--primary); background-color: #eff6ff; }
+        .build-display { min-height: 50px; background-color: #fff; border: 2px solid #2563eb; border-radius: 8px; padding: 10px; font-size: 1.2em; margin-bottom: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-family: serif; }
+        .keypad-area { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .keypad-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+        .key-btn { background-color: white; border: 1px solid #d1d5db; padding: 10px 0; border-radius: 6px; font-size: 1.2em; cursor: pointer; flex: 1 0 21%; max-width: 23%; font-weight: bold; }
+        .key-op { background-color: #dbeafe; color: #1e40af; }
+        .key-control { background-color: #f3f4f6; font-size: 0.9em; flex: 1 0 40%; max-width: 48%; }
+
+        .result-message { text-align: center; font-weight: bold; padding: 15px; border-radius: 6px; margin-top: 15px; display: none; white-space: pre-wrap; }
+        .correct { background-color: #d1fae5; color: #065f46; }
+        .wrong { background-color: #fee2e2; color: #991b1b; }
+        
+        .hidden { display: none; }
+        .btn-home { position: absolute; top: 15px; right: 15px; background-color: #9ca3af; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; width: auto;}
+
+        .progress { text-align: center; font-size: 0.9em; color: #6b7280; margin-top: 25px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div id="screen-home" class="scroll-container">
+        <h1>化学暗記マスター</h1>
+
+        <div class="settings-group" style="border-left: 5px solid #ec4899; margin-top: 15px;">
+            <h3>🎨 イオンの色当て設定</h3>
+            <div class="input-group">
+                <label>出題方向</label>
+                <select id="color-dir">
+                    <option value="ion-to-color">イオン式 → 色</option>
+                    <option value="color-to-ion">色 → イオン式</option>
+                </select>
+            </div>
+            <button class="btn" style="background-color:#ec4899;" onclick="startQuiz(5)">モード5：4択クイズ</button>
+            <button class="btn" style="background-color:#db2777;" onclick="startQuiz(6)">モード6：フラッシュカード</button>
+        </div>
+
+        <div class="settings-group" style="margin-top: 15px;">
+            <h3>📝 反応式モード設定</h3>
+            <div id="group-filter-container" class="group-filter-area"></div>
+            <div class="input-group" style="margin-top:10px;">
+                <label>範囲（ID）</label>
+                <div>
+                    <input type="number" id="start-id" value="1" min="1" max="999"> 〜 <input type="number" id="end-id" value="999" min="1" max="999">
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="is-random">ランダムに出題</label>
+                <input type="checkbox" id="is-random" checked>
+            </div>
+            <button class="btn" onclick="startQuiz(1)">モード1：4択クイズ</button>
+            <button class="btn btn-outline" onclick="startQuiz(2)">モード2：係数穴埋め</button>
+            <button class="btn btn-outline" style="border-color:#f59e0b; color:#d97706;" onclick="startQuiz(3)">モード3：式を組み立てる</button>
+            <button class="btn" style="background-color:#8b5cf6;" onclick="startQuiz(4)">モード4：フラッシュカード</button>
+        </div>
+
+        <button class="btn" style="background-color: #6b7280; margin-top: 20px;" onclick="showDataList()">📖 収録データ一覧</button>
+    </div>
+
+    <div id="screen-play" class="hidden scroll-container">
+        <button class="btn-home" onclick="goHomeConfirm()">× 中断</button>
+        <div class="progress">問 <span id="current-num">1</span> / <span id="total-num">10</span></div>
+        
+        <div id="question-header" class="settings-group" style="text-align:center; margin-top:10px;">
+            <div style="font-size:0.8em; color:#666; margin-bottom:5px;" id="q-id-display">ID: <span id="q-id"></span> <span id="q-group" style="margin-left:10px; color:#2563eb;"></span></div>
+            <div id="q-desc" style="font-weight:bold; font-size:1.1em;"></div>
+        </div>
+
+        <div id="mode1-area" class="options-grid hidden"></div>
+        
+        <div id="mode2-area" class="hidden">
+            <div class="coeff-area" id="coeff-target"></div>
+            <div class="keypad-area">
+                <div class="keypad-row" id="m2-keys"></div>
+                <div class="keypad-row">
+                    <button class="key-btn key-control" onclick="mode2Keypad('BS')">1字消す</button>
+                    <button class="key-btn key-control" onclick="mode2Keypad('CLEAR')">全クリア</button>
+                </div>
+            </div>
+            <button class="btn" onclick="checkCoeffAnswer()" style="margin-top:20px;">回答する</button>
+        </div>
+        
+        <div id="mode3-area" class="hidden">
+            <div id="build-display" class="build-display"></div>
+            <div class="keypad-area">
+                <div class="keypad-row" id="kb-numbers"></div>
+                <div class="keypad-row" id="kb-ops"></div>
+                <div class="keypad-row" id="kb-chemicals"></div>
+            </div>
+            <button class="btn" onclick="checkBuildAnswer()" style="margin-top:15px;">回答する</button>
+        </div>
+
+        <div id="mode5-area" class="options-grid hidden"></div>
+
+        <div id="fc-area" class="hidden">
+            <div id="fc-front" onclick="showFcAnswer()">
+                <div class="fc-display">
+                    <div id="fc-front-content">タップして答えを表示</div>
+                </div>
+            </div>
+            <div id="fc-back" class="hidden">
+                <div class="fc-display" id="fc-answer-content"></div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="btn" style="background-color:var(--wrong); flex:1;" onclick="gradeFc(false)">NG</button>
+                    <button class="btn" style="background-color:var(--correct); flex:1;" onclick="gradeFc(true)">OK!</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="result-msg" class="result-message"></div>
+        <button id="next-btn" class="btn hidden" onclick="nextQuestion()">次へ</button>
+    </div>
+
+    <div id="screen-result" class="hidden scroll-container">
+        <h2 style="margin-top:40px;">結果発表</h2>
+        <div style="text-align: center; font-size: 2.5em; margin: 20px 0;"><span id="score-display">0</span> / <span id="score-total">0</span></div>
+        <p style="text-align: center; margin-bottom:20px;" id="score-comment"></p>
+        
+        <div id="retry-section" class="hidden">
+            <button class="btn btn-retry" onclick="retryWrongQuestions()">間違えた問題のみ再挑戦</button>
+            <div style="margin-top: 15px;" id="wrong-list-container"></div>
+        </div>
+        
+        <button class="btn" style="margin-top:20px;" onclick="goHome()">ホームに戻る</button>
+    </div>
+
+    <div id="screen-list" class="hidden scroll-container">
+        <button class="btn-home" onclick="goHome()">× 閉じる</button>
+        <h2 style="margin-top: 40px;">データ一覧</h2>
+        <div id="full-list-container"></div>
+    </div>
+</div>
+
+<script>
+    // カラーコード定義
+    const colorMap = {
+        "青": "#0000FF", "淡緑": "#90EE90", "黄褐": "#B8860B", "緑": "#008000",
+        "緑（または紫）": "#2E8B57", "淡桃": "#FFB6C1", "桃": "#FFC0CB",
+        "赤紫": "#C71585", "黄": "#FFD700", "赤橙": "#FF4500", "深青": "#00008B",
+        "無色": "#A9A9A9", "血赤": "#8B0000", "黄橙": "#FFA500"
+    };
+
+    // 全データ（中間省略一切なし）
+    const rawData = [
+        // 2期末
+        {id:1, eq:"Zn+H₂SO₄→ZnSO₄+H₂", desc:"亜鉛と希硫酸から水素発生", group:"2期末"},
+        {id:2, eq:"2F₂+2H₂O→4HF+O₂", desc:"フッ素と水との激しい反応（酸素発生）", group:"2期末"},
+        {id:3, eq:"MnO₂+4HCl→MnCl₂+Cl₂+2H₂O", desc:"酸化マンガン（IV）と塩酸の酸化還元反応", group:"2期末"},
+        {id:4, eq:"Cl₂+H₂O⇆HCl+HClO", desc:"塩素水の反応（次亜塩素酸の発生）", group:"2期末"},
+        {id:5, eq:"CaF₂+H₂SO₄→CaSO₄+2HF", desc:"ホタル石と濃硫酸との反応（フッ化水素発生）", group:"2期末"},
+        {id:6, eq:"SiO₂+6HF→H₂SiF₆+2H₂O", desc:"ガラスがフッ化水素酸に溶ける反応", group:"2期末"},
+        {id:7, eq:"NaCl+H₂SO₄→NaHSO₄+HCl", desc:"塩化ナトリウムと濃硫酸との反応", group:"2期末"},
+        {id:8, eq:"Ca(ClO)₂・2H₂O+4HCl→CaCl₂+4H₂O+2Cl₂", desc:"高度さらし粉と塩酸の反応", group:"2期末"},
+        {id:9, eq:"Cu+Cl₂→CuCl₂", desc:"銅の塩素中での燃焼", group:"2期末"},
+        {id:10, eq:"2KBr+Cl₂→2KCl+Br₂", desc:"塩素による臭化カリウムの酸化", group:"2期末"},
+        {id:11, eq:"2KI+Cl₂→2KCl+I₂", desc:"塩素によるヨウ化カリウムの酸化", group:"2期末"},
+        {id:12, eq:"2KI+Br₂→2KBr+I₂", desc:"臭素によるヨウ化カリウムの酸化", group:"2期末"},
+        {id:13, eq:"2H₂O₂→2H₂O+O₂", desc:"酸化マンガン（IV）による過酸化水素水の分解", group:"2期末"},
+        {id:14, eq:"2KClO₃→2KCl+3O₂", desc:"塩素酸カリウムの熱分解", group:"2期末"},
+        {id:15, eq:"3O₂→2O₃", desc:"オゾンの製法", group:"2期末"},
+        {id:16, eq:"2KI+O₃+H₂O→I₂+2KOH+O₂", desc:"ヨウ化カリウムのオゾン酸化", group:"2期末"},
+        {id:17, eq:"Cu+2H₂SO₄→CuSO₄+2H₂O+SO₂", desc:"銅と熱濃硫酸との反応", group:"2期末"},
+        {id:18, eq:"Na₂SO₃+H₂SO₄→Na₂SO₄+H₂O+SO₂", desc:"亜硫酸ナトリウムと希硫酸との反応", group:"2期末"},
+        {id:19, eq:"SO₂+H₂O⇆H⁺+HSO₃⁻", desc:"二酸化硫黄が水に溶けて弱い酸性を示す", group:"2期末"},
+        {id:20, eq:"2H₂S+SO₂→3S+2H₂O", desc:"硫化水素と二酸化硫黄との酸化還元反応", group:"2期末"},
+        {id:21, eq:"2SO₂+O₂→2SO₃", desc:"二酸化硫黄の酸化（触媒はV₂O₅）", group:"2期末"},
+        {id:22, eq:"SO₃+H₂O→H₂SO₄", desc:"三酸化硫黄を希硫酸に溶かして濃硫酸にする", group:"2期末"},
+        {id:23, eq:"C₁₂H₂₂O₁₁→12C+11H₂O", desc:"ショ糖を濃硫酸で脱水", group:"2期末"},
+        {id:24, eq:"FeS+H₂SO₄→FeSO₄+H₂S", desc:"硫化鉄（II）に希硫酸を加える", group:"2期末"},
+        {id:25, eq:"H₂S→S+2H⁺+2e⁻", desc:"硫化水素の還元作用（半反応式）", group:"2期末"},
+        {id:26, eq:"NH₄NO₂→2H₂O+N₂", desc:"亜硝酸アンモニウムの熱分解", group:"2期末"},
+        {id:27, eq:"2NH₄Cl+Ca(OH)₂→CaCl₂+2H₂O+2NH₃", desc:"塩化アンモニウムと水酸化カルシウムとの反応", group:"2期末"},
+        {id:28, eq:"NH₃+H₂O→NH₄⁺+OH⁻", desc:"アンモニアの塩基性を示すイオン反応式", group:"2期末"},
+        {id:29, eq:"3Cu+8HNO₃→3Cu(NO₃)₂+4H₂O+2NO", desc:"銅と希硝酸との反応", group:"2期末"},
+        {id:30, eq:"2NO+O₂→2NO₂", desc:"一酸化窒素の酸化", group:"2期末"},
+        {id:31, eq:"Cu+4HNO₃→Cu(NO₃)₂+2H₂O+2NO₂", desc:"銅と濃硝酸との反応", group:"2期末"},
+        {id:32, eq:"4NH₃+5O₂→4NO+6H₂O", desc:"白金触媒でアンモニアを酸化させる反応", group:"2期末"},
+        {id:33, eq:"3NO₂+H₂O→2HNO₃+NO", desc:"二酸化窒素と温水との反応", group:"2期末"},
+        {id:34, eq:"4P+5O₂→P₄O₁₀", desc:"リンの燃焼", group:"2期末"},
+        {id:35, eq:"P₄O₁₀+6H₂O→4H₃PO₄", desc:"十酸化四リンと熱水との反応", group:"2期末"},
+        {id:36, eq:"H₃PO₄⇆H⁺+H₂PO₄⁻", desc:"リン酸の1段目の電離", group:"2期末"},
+        {id:37, eq:"H₂PO₄⁻⇆H⁺+HPO₄²⁻", desc:"リン酸の2段目の電離", group:"2期末"},
+        {id:38, eq:"HPO₄²⁻⇆H⁺+PO₄³⁻", desc:"リン酸の3段目の電離", group:"2期末"},
+        {id:39, eq:"NH₃+HCl→NH₄Cl", desc:"アンモニアと塩化水素との反応", group:"2期末"},
+        {id:40, eq:"NH₃+H₂O⇆NH₄⁺+OH⁻", desc:"アンモニアの加水分解", group:"2期末"},
+        {id:41, eq:"HCOOH→CO+H₂O", desc:"ギ酸を濃硫酸で脱水", group:"2期末"},
+        {id:42, eq:"C+H₂O→CO+H₂", desc:"コークスと高温水蒸気との反応", group:"2期末"},
+        {id:43, eq:"Fe₂O₃+3CO→2Fe+3CO₂", desc:"酸化鉄の還元【鉄の精錬】", group:"2期末"},
+        {id:44, eq:"CaCO₃+2HCl→CaCl₂+H₂O+CO₂", desc:"石灰石と塩酸との反応", group:"2期末"},
+        {id:45, eq:"Ca(OH)₂+CO₂→CaCO₃+H₂O", desc:"石灰水の白濁", group:"2期末"},
+        {id:46, eq:"SiO₂+2C→Si+2CO", desc:"ケイ砂にコークスを加えて強熱", group:"2期末"},
+        {id:47, eq:"SiO₂+2NaOH→Na₂SiO₃+H₂O", desc:"ケイ酸ナトリウムの生成", group:"2期末"},
+
+        // 遷移元素(反応式)
+        {id:68, eq:"Zn+2HCl→ZnCl₂+H₂", desc:"亜鉛と塩酸から水素発生【加熱なし】", group:"遷移元素(反応式)"},
+        {id:69, eq:"Zn+2NaOH+2H₂O→Na₂[Zn(OH)₄]+H₂", desc:"亜鉛が過剰の水酸化ナトリウム水溶液に溶ける反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:70, eq:"Zn²⁺+2OH⁻→Zn(OH)₂", desc:"亜鉛水溶液と塩基との反応(水酸化亜鉛の生成)【加熱なし】", group:"遷移元素(反応式)"},
+        {id:71, eq:"Zn(OH)₂+2HCl→ZnCl₂+2H₂O", desc:"水酸化亜鉛と塩酸との反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:72, eq:"Zn(OH)₂+2NaOH→Na₂[Zn(OH)₄]", desc:"水酸化亜鉛が過剰のNaOHに溶ける【加熱なし】", group:"遷移元素(反応式)"},
+        {id:73, eq:"Zn(OH)₂+4NH₃→[Zn(NH₃)₄]²⁺+2OH⁻", desc:"水酸化亜鉛が過剰のアンモニア水に溶ける【加熱なし】", group:"遷移元素(反応式)"},
+        {id:74, eq:"Fe+H₂SO₄→FeSO₄+H₂", desc:"鉄と硫酸から水素発生【加熱なし】", group:"遷移元素(反応式)"},
+        {id:75, eq:"Fe²⁺+2OH⁻→Fe(OH)₂", desc:"鉄(II)イオンに塩基を加える【加熱なし】", group:"遷移元素(反応式)"},
+        {id:76, eq:"Fe³⁺+3OH⁻→Fe(OH)₃", desc:"鉄(III)イオンに塩基を加える【加熱なし】", group:"遷移元素(反応式)"},
+        {id:77, eq:"2CrO₄²⁻+2H⁺→Cr₂O₇²⁻+H₂O", desc:"クロム酸イオンを酸性にするとニクロム酸イオンへ【加熱なし】", group:"遷移元素(反応式)"},
+        {id:78, eq:"Cr₂O₇²⁻+14H⁺+6e⁻→2Cr³⁺+7H₂O", desc:"ニクロム酸カリウムの酸化剤としての働き【加熱なし】", group:"遷移元素(反応式)"},
+        {id:79, eq:"Cr₂O₇²⁻+2OH⁻→2CrO₄²⁻+H₂O", desc:"ニクロム酸イオンを塩基性にするとクロム酸イオンへ【加熱なし】", group:"遷移元素(反応式)"},
+        {id:80, eq:"4CuO→2Cu₂O+O₂", desc:"酸化銅(II)を強熱して酸化銅(I)へ【加熱あり】", group:"遷移元素(反応式)"},
+        {id:81, eq:"Cu²⁺+2OH⁻→Cu(OH)₂", desc:"銅イオンに塩基を加える(青白色沈殿)【加熱なし】", group:"遷移元素(反応式)"},
+        {id:82, eq:"Cu(OH)₂→CuO+H₂O", desc:"水酸化銅(II)を加熱(黒色酸化銅へ)【加熱あり】", group:"遷移元素(反応式)"},
+        {id:83, eq:"Cu(OH)₂+4NH₃→[Cu(NH₃)₄]²⁺+2OH⁻", desc:"水酸化銅(II)が過剰アンモニア水に溶ける【加熱なし】", group:"遷移元素(反応式)"},
+        {id:84, eq:"Ag+2HNO₃→AgNO₃+H₂O+NO₂", desc:"銀と濃硝酸の反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:85, eq:"2Ag⁺+2OH⁻→Ag₂O+H₂O", desc:"銀イオンに塩基(褐色酸化銀生成)【加熱なし】", group:"遷移元素(反応式)"},
+        {id:86, eq:"Ag₂O+H₂O+4NH₃→2[Ag(NH₃)₂]⁺+2OH⁻", desc:"酸化銀が過剰アンモニア水に溶ける【加熱なし】", group:"遷移元素(反応式)"},
+        {id:87, eq:"Ca²⁺+CO₃²⁻→CaCO₃", desc:"Caイオンと炭酸イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:88, eq:"Ba²⁺+CO₃²⁻→BaCO₃", desc:"Baイオンと炭酸イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:89, eq:"Ba²⁺+SO₄²⁻→BaSO₄", desc:"Baイオンと硫酸イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:90, eq:"Ba²⁺+CrO₄²⁻→BaCrO₄", desc:"Baイオンとクロム酸イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:91, eq:"Pb²⁺+SO₄²⁻→PbSO₄", desc:"Pbイオンと硫酸イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:92, eq:"Pb²⁺+CrO₄²⁻→PbCrO₄", desc:"Pbイオンとクロム酸イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:93, eq:"Pb²⁺+2Cl⁻→PbCl₂", desc:"Pbイオンと塩化物イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:94, eq:"Ag⁺+Cl⁻→AgCl", desc:"銀イオンと塩化物イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
+        {id:95, eq:"2Ag⁺+CrO₄²⁻→Ag₂CrO₄", desc:"銀イオンとクロム酸イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
+
+        // 色当てデータ
+        {id:"c1", eq:"Cu²⁺", name:"銅(II)イオン", color:"青", desc:"水和した状態（水溶液中）の色", group:"色当て", type:"color"},
+        {id:"c2", eq:"Fe²⁺", name:"鉄(II)イオン", color:"淡緑", desc:"酸化されるとFe³⁺へ", group:"色当て", type:"color"},
+        {id:"c3", eq:"Fe³⁺", name:"鉄(III)イオン", color:"黄褐", desc:"", group:"色当て", type:"color"},
+        {id:"c4", eq:"Ni²⁺", name:"ニッケル(II)イオン", color:"緑", desc:"", group:"色当て", type:"color"},
+        {id:"c5", eq:"Cr³⁺", name:"クロム(III)イオン", color:"緑（または紫）", desc:"条件により変化", group:"色当て", type:"color"},
+        {id:"c6", eq:"Mn²⁺", name:"マンガン(II)イオン", color:"淡桃", desc:"ほぼ無色に見えることもある", group:"色当て", type:"color"},
+        {id:"c7", eq:"Co²⁺", name:"コバルト(II)イオン", color:"桃", desc:"", group:"色当て", type:"color"},
+        {id:"c8", eq:"MnO₄⁻", name:"過マンガン酸イオン", color:"赤紫", desc:"非常に強力な酸化剤", group:"色当て", type:"color"},
+        {id:"c9", eq:"CrO₄²⁻", name:"クロム酸イオン", color:"黄", desc:"液性を酸性にするとCr₂O₇²⁻に", group:"色当て", type:"color"},
+        {id:"c10", eq:"Cr₂O₇²⁻", name:"ニクロム酸イオン", color:"赤橙", desc:"液性を塩基性にするとCrO₄²⁻に", group:"色当て", type:"color"},
+        {id:"c11", eq:"[Cu(NH₃)₄]²⁺", name:"テトラアンミン銅(II)イオン", color:"深青", desc:"濃い青色", group:"色当て", type:"color"},
+        {id:"c12", eq:"[Ag(NH₃)₂]⁺", name:"ジアンミン銀(I)イオン", color:"無色", desc:"アンモニアに溶けて透明に", group:"色当て", type:"color"},
+        {id:"c13", eq:"[Zn(NH₃)₄]²⁺", name:"テトラアンミン亜鉛(II)イオン", color:"無色", desc:"亜鉛は常に無色", group:"色当て", type:"color"},
+        {id:"c14", eq:"[Fe(SCN)]²⁺", name:"チオシアナト鉄(III)イオン", color:"血赤", desc:"血のような赤色", group:"色当て", type:"color"},
+        {id:"c15", eq:"[Fe(CN)₆]⁴⁻", name:"ヘキサシアニド鉄(II)酸イオン", color:"黄", desc:"K₄[Fe(CN)₆]水溶液", group:"色当て", type:"color"},
+        {id:"c16", eq:"[Fe(CN)₆]³⁻", name:"ヘキサシアニド鉄(III)酸イオン", color:"黄橙", desc:"K₃[Fe(CN)₆]水溶液", group:"色当て", type:"color"}
+    ];
+
+    let currentMode, quizList, currentIndex, score, colorDir, wrongQuestions = [];
+    let coeffAnswers = [], selectedCoeffInput = null, mode3InputBuffer = [];
+    const screens = { home: document.getElementById('screen-home'), play: document.getElementById('screen-play'), result: document.getElementById('screen-result'), list: document.getElementById('screen-list') };
+
+    window.onload = () => { renderGroupFilters(); };
+
+    function renderGroupFilters() {
+        const container = document.getElementById('group-filter-container');
+        const groups = [...new Set(rawData.map(item => item.group))].filter(g => g !== "色当て");
+        container.innerHTML = groups.map(g => `
+            <label class="group-chip"><input type="checkbox" name="group-select" value="${g}" checked> ${g}</label>
+        `).join('');
+    }
+
+    function getColoredText(text, colorName) {
+        const hex = colorMap[colorName] || "transparent";
+        return `<span class="color-underline" style="--u-color: ${hex}">${text}</span>`;
+    }
+
+    function startQuiz(mode) {
+        currentMode = mode;
+        colorDir = document.getElementById('color-dir').value;
+        let list = [];
+
+        if (mode === 5 || mode === 6) {
+            const colorData = rawData.filter(d => d.type === "color");
+            if (colorDir === "color-to-ion" && mode === 6) {
+                const uniqueColors = [...new Set(colorData.map(d => d.color))];
+                list = uniqueColors.map(c => ({ color: c, isGroup: true, type: "color" }));
+            } else {
+                list = [...colorData];
+            }
+        } else {
+            const selectedGroups = Array.from(document.querySelectorAll('input[name="group-select"]:checked')).map(cb => cb.value);
+            const start = parseInt(document.getElementById('start-id').value) || 1;
+            const end = parseInt(document.getElementById('end-id').value) || 999;
+            list = rawData.filter(d => selectedGroups.includes(d.group) && typeof d.id === 'number' && d.id >= start && d.id <= end);
+        }
+
+        if (list.length === 0) return alert("条件に合う問題がありません。");
+        if (document.getElementById('is-random').checked) list = shuffleArray([...list]);
+        else quizList = list;
+        
+        quizList = list;
+        currentIndex = 0; score = 0; wrongQuestions = [];
+        document.getElementById('total-num').textContent = quizList.length;
+        showScreen('play');
+        loadQuestion();
+    }
+
+    function retryWrongQuestions() {
+        if (wrongQuestions.length === 0) return;
+        quizList = shuffleArray([...wrongQuestions]);
+        currentIndex = 0; score = 0; wrongQuestions = [];
+        document.getElementById('total-num').textContent = quizList.length;
+        showScreen('play');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const q = quizList[currentIndex];
+        document.getElementById('current-num').textContent = currentIndex + 1;
+        document.getElementById('result-msg').style.display = 'none';
+        document.getElementById('next-btn').classList.add('hidden');
+        
+        ['mode1-area', 'mode2-area', 'mode3-area', 'mode5-area', 'fc-area'].forEach(id => document.getElementById(id).classList.add('hidden'));
+
+        if (currentMode === 6 || currentMode === 4) {
+            setupFlashcard(q);
+        } else if (currentMode === 5) {
+            setupMode5(q);
+        } else if (currentMode === 1) {
+            setupMode1(q);
+        } else if (currentMode === 2) {
+            setupMode2(q);
+        } else if (currentMode === 3) {
+            setupMode3(q);
+        }
+    }
+
+    function setupFlashcard(q) {
+        document.getElementById('fc-area').classList.remove('hidden');
+        document.getElementById('fc-front').classList.remove('hidden');
+        document.getElementById('fc-back').classList.add('hidden');
+        
+        const qHeader = document.getElementById('question-header');
+        const front = document.getElementById('fc-front-content');
+
+        if (currentMode === 6) {
+            qHeader.classList.add('hidden');
+            if (colorDir === "ion-to-color") {
+                front.innerHTML = `<div style="font-size:1.8em; font-family:serif;">${q.eq}</div><div style="font-size:1.1em; color:#666;">${q.name}</div>`;
+            } else {
+                front.innerHTML = `<div style="font-size:2.2em;">${getColoredText(q.color, q.color)}</div>`;
+            }
+        } else {
+            qHeader.classList.remove('hidden');
+            document.getElementById('q-id-display').classList.remove('hidden');
+            document.getElementById('q-id').textContent = q.id;
+            document.getElementById('q-group').textContent = `[${q.group}]`;
+            document.getElementById('q-desc').textContent = q.desc;
+            front.innerHTML = `<div style="color:#9ca3af; font-weight:bold;">タップして答えを表示</div>`;
+        }
+    }
+
+    function showFcAnswer() {
+        const q = quizList[currentIndex];
+        const content = document.getElementById('fc-answer-content');
+        document.getElementById('fc-front').classList.add('hidden');
+        document.getElementById('fc-back').classList.remove('hidden');
+
+        if (currentMode === 6) {
+            if (colorDir === "ion-to-color") {
+                content.innerHTML = `<div style="font-size:2.2em;">${getColoredText(q.color, q.color)}</div><div style="margin-top:10px; font-size:0.9em; color:#666;">${q.desc}</div>`;
+            } else {
+                const ions = rawData.filter(d => d.color === q.color);
+                content.innerHTML = ions.map(ion => `
+                    <div style="margin-bottom:15px;">
+                        <div style="font-size:1.8em; font-family:serif;">${getColoredText(ion.eq, q.color)}</div>
+                        <div style="font-size:1em;">${ion.name}</div>
+                    </div>
+                `).join('');
+            }
+        } else {
+            content.innerHTML = `<div style="font-family:serif; font-size:1.6em; font-weight:bold;">${q.eq}</div>`;
+        }
+    }
+
+    function gradeFc(ok) { 
+        if (ok) score++; 
+        else wrongQuestions.push(quizList[currentIndex]);
+        nextQuestion(); 
+    }
+
+    function setupMode5(q) {
+        const qHeader = document.getElementById('question-header');
+        qHeader.classList.remove('hidden');
+        document.getElementById('q-id-display').classList.add('hidden');
+        const header = document.getElementById('q-desc');
+        const container = document.getElementById('mode5-area');
+        container.classList.remove('hidden');
+        container.innerHTML = '';
+
+        if (colorDir === "ion-to-color") {
+            header.innerHTML = `<div style="font-family:serif; font-size:1.3em;">${q.eq}</div><div>${q.name}</div>`;
+            const others = rawData.filter(d => d.type === "color" && d.color !== q.color);
+            const choices = [q.color, ...new Set(others.map(o => o.color))].sort(() => Math.random() - 0.5).slice(0, 4);
+            choices.forEach(c => container.appendChild(createOption(getColoredText(c, c), c === q.color, q.color)));
+        } else {
+            header.innerHTML = `<div>${getColoredText(q.color, q.color)} のイオンは？</div>`;
+            const others = rawData.filter(d => d.type === "color" && d.eq !== q.eq);
+            const choices = [q, ...others.sort(() => Math.random() - 0.5).slice(0, 3)].sort(() => Math.random() - 0.5);
+            choices.forEach(c => container.appendChild(createOption(`${c.eq} (${c.name})`, c.eq === q.eq, q.eq)));
+        }
+    }
+
+    function setupMode1(q) {
+        const qHeader = document.getElementById('question-header');
+        qHeader.classList.remove('hidden');
+        document.getElementById('q-id-display').classList.remove('hidden');
+        document.getElementById('q-id').textContent = q.id;
+        document.getElementById('q-group').textContent = `[${q.group}]`;
+        document.getElementById('q-desc').textContent = q.desc;
+        const container = document.getElementById('mode1-area');
+        container.classList.remove('hidden');
+        container.innerHTML = '';
+        const others = rawData.filter(d => typeof d.id === 'number' && d.id !== q.id);
+        const choices = [q, ...others.sort(() => Math.random() - 0.5).slice(0, 3)].sort(() => Math.random() - 0.5);
+        choices.forEach(c => container.appendChild(createOption(c.eq, c.id === q.id, q.eq)));
+    }
+
+    function createOption(html, isCorrect, correctText) {
+        const div = document.createElement('div');
+        div.className = 'option-btn';
+        div.innerHTML = html;
+        div.onclick = () => {
+            if (!document.getElementById('next-btn').classList.contains('hidden')) return;
+            const msg = document.getElementById('result-msg');
+            msg.style.display = 'block';
+            msg.className = 'result-message ' + (isCorrect ? 'correct' : 'wrong');
+            msg.innerHTML = isCorrect ? "正解！" : `不正解... 正解は: ${correctText}`;
+            if (isCorrect) score++;
+            else wrongQuestions.push(quizList[currentIndex]);
+            document.getElementById('next-btn').classList.remove('hidden');
+            div.style.backgroundColor = isCorrect ? "#d1fae5" : "#fee2e2";
+        };
+        return div;
+    }
+
+    // --- モード2（係数穴埋め） ---
+    function setupMode2(q) {
+        const qHeader = document.getElementById('question-header');
+        qHeader.classList.remove('hidden');
+        document.getElementById('q-id-display').classList.remove('hidden');
+        document.getElementById('q-id').textContent = q.id;
+        document.getElementById('q-group').textContent = `[${q.group}]`;
+        document.getElementById('q-desc').textContent = q.desc;
+        document.getElementById('mode2-area').classList.remove('hidden');
+
+        const container = document.getElementById('coeff-target');
+        container.innerHTML = '';
+        coeffAnswers = []; selectedCoeffInput = null;
+        
+        q.eq.split(/([\+→⇆])/).map(s => s.trim()).filter(s => s !== "").forEach(part => {
+            if (part.match(/^[\+→⇆]$/)) { 
+                const span = document.createElement('span'); 
+                span.textContent = part; 
+                container.appendChild(span); 
+            } else {
+                const m = part.match(/^(\d+)(.*)/); 
+                let c = m ? m[1] : "1"; 
+                let f = m ? m[2] : part;
+                coeffAnswers.push(parseInt(c));
+                const inp = document.createElement('input'); 
+                inp.className = 'coeff-input'; 
+                inp.readOnly = true;
+                inp.onclick = (e) => { 
+                    document.querySelectorAll('.coeff-input').forEach(i => i.classList.remove('active-input')); 
+                    selectedCoeffInput = e.target; 
+                    e.target.classList.add('active-input'); 
+                };
+                container.appendChild(inp); 
+                container.appendChild(document.createTextNode(f));
+            }
+        });
+
+        const m2k = document.getElementById('m2-keys'); 
+        m2k.innerHTML = '';
+        [1,2,3,4,5,6,7,8,9,10,11,12].forEach(n => { 
+            const b = document.createElement('button'); 
+            b.className='key-btn'; 
+            b.textContent=n; 
+            b.onclick=()=>mode2Keypad(n); 
+            m2k.appendChild(b); 
+        });
+    }
+
+    function mode2Keypad(v) { 
+        if(!selectedCoeffInput) return; 
+        if(v==='BS') selectedCoeffInput.value=""; 
+        else if(v==='CLEAR') document.querySelectorAll('.coeff-input').forEach(i=>i.value="");
+        else selectedCoeffInput.value=v; 
+    }
+
+    function checkCoeffAnswer() {
+        const inps = document.querySelectorAll('.coeff-input'); 
+        let ok = true;
+        inps.forEach((inp, i) => { if(parseInt(inp.value||1) !== coeffAnswers[i]) ok = false; });
+        showResultMsgMode23(ok, quizList[currentIndex].eq);
+    }
+
+    // --- モード3（組み立て） ---
+    function setupMode3(q) {
+        const qHeader = document.getElementById('question-header');
+        qHeader.classList.remove('hidden');
+        document.getElementById('q-id-display').classList.remove('hidden');
+        document.getElementById('q-id').textContent = q.id;
+        document.getElementById('q-group').textContent = `[${q.group}]`;
+        document.getElementById('q-desc').textContent = q.desc;
+        document.getElementById('mode3-area').classList.remove('hidden');
+
+        mode3InputBuffer = []; 
+        document.getElementById('build-display').textContent = "";
+        
+        const kn = document.getElementById('kb-numbers'); kn.innerHTML = ''; 
+        [1,2,3,4,5,6,7,8,9].forEach(n => { 
+            const b = document.createElement('button'); 
+            b.className='key-btn'; b.textContent=n; b.onclick=()=>mode3In(n); kn.appendChild(b); 
+        });
+        
+        const ko = document.getElementById('kb-ops'); 
+        ko.innerHTML = ['+','→','⇆'].map(o => `<button class="key-btn key-op" onclick="mode3In('${o}')">${o}</button>`).join('') + `<button class="key-btn key-control" onclick="mode3In('BS')">1字消す</button>`;
+        
+        const kc = document.getElementById('kb-chemicals'); kc.innerHTML = '';
+        const chems = [...new Set(q.eq.split(/[\+→⇆]/).map(s => s.trim().replace(/^\d+/, "")))];
+        shuffleArray(chems).forEach(c => { 
+            const b = document.createElement('button'); 
+            b.className='key-btn'; b.style.fontFamily='serif'; b.textContent=c; b.onclick=()=>mode3In(c); kc.appendChild(b); 
+        });
+    }
+
+    function mode3In(v) { 
+        if(v==='BS') mode3InputBuffer.pop(); 
+        else mode3InputBuffer.push(v); 
+        document.getElementById('build-display').textContent = mode3InputBuffer.join(" "); 
+    }
+
+    function checkBuildAnswer() { 
+        const u = mode3InputBuffer.join("").replace(/\s/g, ""); 
+        showResultMsgMode23(u === quizList[currentIndex].eq, quizList[currentIndex].eq); 
+    }
+
+    function showResultMsgMode23(ok, ans) {
+        const m = document.getElementById('result-msg'); 
+        m.style.display='block'; 
+        m.className = 'result-message ' + (ok?'correct':'wrong');
+        m.textContent = ok ? "正解！" : "不正解...\n正解: " + ans;
+        if(ok) score++; 
+        else wrongQuestions.push(quizList[currentIndex]);
+        document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    // --- 共通ユーティリティ ---
+    function shuffleArray(a) { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+    function nextQuestion() { currentIndex++; if (currentIndex < quizList.length) loadQuestion(); else showResult(); }
+    
+    function showResult() { 
+        showScreen('result'); 
+        document.getElementById('score-display').textContent = score; 
+        document.getElementById('score-total').textContent = quizList.length;
+        
+        const percentage = (score / quizList.length) * 100;
+        let c = "";
+        if (percentage === 100) c = "完璧です！素晴らしい！";
+        else if (percentage >= 80) c = "あと少し！";
+        else c = "繰り返し復習しましょう。";
+        document.getElementById('score-comment').textContent = c;
+
+        const retrySection = document.getElementById('retry-section');
+        const wrongContainer = document.getElementById('wrong-list-container');
+        wrongContainer.innerHTML = '';
+        
+        if (wrongQuestions.length > 0) {
+            retrySection.classList.remove('hidden');
+            wrongQuestions.forEach(q => {
+                const item = document.createElement('div');
+                item.style.marginBottom = "10px";
+                item.style.padding = "10px";
+                item.style.backgroundColor = "#fee2e2";
+                item.style.borderRadius = "6px";
+                
+                if (q.type === 'color') {
+                    item.innerHTML = `
+                        <div style="font-size:0.8em; margin-bottom:5px;">色当て問題</div>
+                        <div style="font-weight:bold; font-family:serif;">${q.eq} ${q.name}</div>
+                        <div>正解: ${getColoredText(q.color, q.color)}</div>
+                    `;
+                } else {
+                    item.innerHTML = `
+                        <div style="font-size:0.8em; margin-bottom:5px;">ID:${q.id} ${q.desc}</div>
+                        <div style="font-weight:bold; color:var(--wrong); font-family:serif;">${q.eq}</div>
+                    `;
+                }
+                wrongContainer.appendChild(item);
+            });
+        } else {
+            retrySection.classList.add('hidden');
+        }
+    }
+
+    function goHome() { showScreen('home'); }
+    function goHomeConfirm() { if(confirm("ホームに戻りますか？")) goHome(); }
+    function showScreen(name) { Object.values(screens).forEach(s => s.classList.add('hidden')); screens[name].classList.remove('hidden'); window.scrollTo(0,0); }
+
+    function showDataList() {
+        const container = document.getElementById('full-list-container');
+        container.innerHTML = rawData.map(item => `
+            <div style="background:white; padding:10px; margin-bottom:5px; border-radius:5px; border:1px solid #ddd;">
+                <div style="font-weight:bold;">${item.type === 'color' ? '🎨' : 'ID:' + item.id} ${item.eq}</div>
+                <div style="font-size:0.9em; color:#444;">${item.type === 'color' ? item.name + ' (' + getColoredText(item.color, item.color) + ')' : item.desc}</div>
+            </div>
+        `).join('');
+        showScreen('list');
+    }
+</script>
+</body>
+</html>

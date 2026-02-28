@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>化学暗記マスター 完全版</title>
     <style>
         :root {
@@ -102,7 +105,6 @@
         .btn-outline { background-color: transparent; border: 2px solid var(--primary); color: var(--primary); }
         .btn-retry { background-color: var(--accent); }
 
-        /* 下線スタイル */
         .color-underline {
             display: inline-block;
             border-bottom: 4px solid var(--u-color, transparent);
@@ -129,7 +131,6 @@
         .options-grid { display: flex; flex-direction: column; gap: 10px; }
         .option-btn { background-color: white; border: 2px solid #e5e7eb; padding: 12px; border-radius: 8px; text-align: left; cursor: pointer; transition: all 0.2s; font-size: 0.9em; }
 
-        /* モード2・3用スタイル */
         .coeff-area { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 5px; padding: 15px 5px; background-color: #f8fafc; border-radius: 8px; border: 2px dashed #cbd5e1; font-size: 1.1em; margin-bottom: 10px; }
         .coeff-input { width: 45px !important; height: 40px; font-size: 1.2em; margin: 0 2px; background-color: #fff; text-align: center; cursor: pointer; border: 2px solid #d1d5db; border-radius: 6px; font-weight: bold; color: var(--primary); }
         .active-input { border-color: var(--primary); background-color: #eff6ff; }
@@ -415,6 +416,16 @@
         return `<span class="color-underline" style="--u-color: ${hex}">${text}</span>`;
     }
 
+    function shuffleArray(array) {
+        // 配列の破壊的変更を避けるためコピーを作成してシャッフル
+        const a = [...array];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
     function startQuiz(mode) {
         currentMode = mode;
         colorDir = document.getElementById('color-dir').value;
@@ -436,10 +447,13 @@
         }
 
         if (list.length === 0) return alert("条件に合う問題がありません。");
-        if (document.getElementById('is-random').checked) list = shuffleArray([...list]);
-        else quizList = list;
         
-        quizList = list;
+        if (document.getElementById('is-random').checked) {
+            quizList = shuffleArray(list);
+        } else {
+            quizList = list;
+        }
+        
         currentIndex = 0; score = 0; wrongQuestions = [];
         document.getElementById('total-num').textContent = quizList.length;
         showScreen('play');
@@ -448,7 +462,7 @@
 
     function retryWrongQuestions() {
         if (wrongQuestions.length === 0) return;
-        quizList = shuffleArray([...wrongQuestions]);
+        quizList = shuffleArray(wrongQuestions);
         currentIndex = 0; score = 0; wrongQuestions = [];
         document.getElementById('total-num').textContent = quizList.length;
         showScreen('play');
@@ -530,7 +544,8 @@
         nextQuestion(); 
     }
 
-function setupMode5(q) {
+    // ★バグ修正箇所：確実に「正解1つ＋ランダムな不正解3つ」を取り出してシャッフルする安全なロジック
+    function setupMode5(q) {
         const qHeader = document.getElementById('question-header');
         qHeader.classList.remove('hidden');
         document.getElementById('q-id-display').classList.add('hidden');
@@ -540,21 +555,43 @@ function setupMode5(q) {
         container.innerHTML = '';
 
         if (colorDir === "ion-to-color") {
-            // イオン式 → 色 の場合
             header.innerHTML = `<div style="font-family:serif; font-size:1.3em;">${q.eq}</div><div>${q.name}</div>`;
-            const others = rawData.filter(d => d.type === "color" && d.color !== q.color);
-            const otherColors = [...new Set(others.map(o => o.color))];
-            const wrongChoices = shuffleArray(otherColors).slice(0, 3);
+            
+            // 1. 正解の色以外の色を全て重複なしで集める
+            const wrongPool = [];
+            rawData.forEach(d => {
+                if (d.type === "color" && d.color !== q.color && !wrongPool.includes(d.color)) {
+                    wrongPool.push(d.color);
+                }
+            });
+            
+            // 2. シャッフルして先頭3つを不正解として選ぶ
+            const shuffledWrongPool = shuffleArray(wrongPool);
+            const wrongChoices = shuffledWrongPool.slice(0, 3);
+            
+            // 3. 正解1個と不正解3個を合わせて、再度シャッフルする
             const choices = shuffleArray([q.color, ...wrongChoices]);
             
             choices.forEach(c => container.appendChild(createOption(getColoredText(c, c), c === q.color, q.color)));
+            
         } else {
-            // 色 → イオン式 の場合
             header.innerHTML = `<div>${getColoredText(q.color, q.color)} のイオンは？</div>`;
             
-            // ★変更点：不正解の選択肢には「出題された色とは【違う色】のイオン」だけを抽出する
-            const others = rawData.filter(d => d.type === "color" && d.color !== q.color);
-            const wrongChoices = shuffleArray(others).slice(0, 3);
+            // 1. 正解と同じ色を持つイオンをすべて除外し、色被りがないように他のイオンを集める
+            const wrongPool = [];
+            const seenColors = new Set([q.color]); // 正解の色は登録しておく
+            rawData.forEach(d => {
+                if (d.type === "color" && !seenColors.has(d.color)) {
+                    seenColors.add(d.color);
+                    wrongPool.push(d);
+                }
+            });
+            
+            // 2. シャッフルして先頭3つを不正解として選ぶ
+            const shuffledWrongPool = shuffleArray(wrongPool);
+            const wrongChoices = shuffledWrongPool.slice(0, 3);
+            
+            // 3. 正解1個と不正解3個を合わせて、再度シャッフルする
             const choices = shuffleArray([q, ...wrongChoices]);
             
             choices.forEach(c => container.appendChild(createOption(`${c.eq} (${c.name})`, c.eq === q.eq, q.eq)));
@@ -572,8 +609,10 @@ function setupMode5(q) {
         container.classList.remove('hidden');
         container.innerHTML = '';
         
-        const others = rawData.filter(d => typeof d.id === 'number' && d.id !== q.id);
-        const wrongChoices = shuffleArray(others).slice(0, 3);
+        // モード1の選択肢も安全なロジックに統一
+        const wrongPool = rawData.filter(d => typeof d.id === 'number' && d.id !== q.id);
+        const shuffledWrongPool = shuffleArray(wrongPool);
+        const wrongChoices = shuffledWrongPool.slice(0, 3);
         const choices = shuffleArray([q, ...wrongChoices]);
         
         choices.forEach(c => container.appendChild(createOption(c.eq, c.id === q.id, q.eq)));
@@ -711,7 +750,6 @@ function setupMode5(q) {
     }
 
     // --- 共通ユーティリティ ---
-    function shuffleArray(a) { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
     function nextQuestion() { currentIndex++; if (currentIndex < quizList.length) loadQuestion(); else showResult(); }
     
     function showResult() { 
@@ -741,7 +779,6 @@ function setupMode5(q) {
                 
                 if (q.type === 'color') {
                     if (q.isGroup) {
-                        // モード6(色→イオン)のグループ化問題で間違えた場合
                         const ions = rawData.filter(d => d.color === q.color);
                         const ionStrs = ions.map(ion => `${ion.eq} ${ion.name}`).join(' / ');
                         item.innerHTML = `
@@ -750,7 +787,6 @@ function setupMode5(q) {
                             <div style="margin-top:5px; font-size:0.9em;">正解: ${ionStrs}</div>
                         `;
                     } else {
-                        // モード5またはモード6(イオン→色)で間違えた場合
                         item.innerHTML = `
                             <div style="font-size:0.8em; margin-bottom:5px;">色当て問題</div>
                             <div style="font-weight:bold; font-family:serif;">${q.eq} ${q.name}</div>

@@ -275,7 +275,7 @@
         "無色": "#A9A9A9", "血赤": "#8B0000", "黄橙": "#FFA500"
     };
 
-    // 全データ（中間省略一切なし）
+    // 全データ
     const rawData = [
         // 典型元素(2学期)
         {id:1, eq:"Zn+H₂SO₄→ZnSO₄+H₂", desc:"亜鉛と希硫酸から水素発生", group:"典型元素(2学期)"},
@@ -416,12 +416,15 @@
         return `<span class="color-underline" style="--u-color: ${hex}">${text}</span>`;
     }
 
+    // ★修正箇所：iOS等のスマホブラウザにおける配列破壊バグを防止する安全なシャッフル
     function shuffleArray(array) {
-        // 配列の破壊的変更を避けるためコピーを作成してシャッフル
         const a = [...array];
         for (let i = a.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
+            // 分割代入を使わずに、確実に入れ替える
+            const temp = a[i];
+            a[i] = a[j];
+            a[j] = temp;
         }
         return a;
     }
@@ -544,7 +547,7 @@
         nextQuestion(); 
     }
 
-    // ★バグ修正箇所：確実に「正解1つ＋ランダムな不正解3つ」を取り出してシャッフルする安全なロジック
+    // ★修正箇所：正解を確実に保持しつつ、安全なシャッフル関数を適用する
     function setupMode5(q) {
         const qHeader = document.getElementById('question-header');
         qHeader.classList.remove('hidden');
@@ -577,9 +580,9 @@
         } else {
             header.innerHTML = `<div>${getColoredText(q.color, q.color)} のイオンは？</div>`;
             
-            // 1. 正解と同じ色を持つイオンをすべて除外し、色被りがないように他のイオンを集める
+            // 1. 正解と同じ色を持つイオンを除外し、他のイオンを集める
             const wrongPool = [];
-            const seenColors = new Set([q.color]); // 正解の色は登録しておく
+            const seenColors = new Set([q.color]); 
             rawData.forEach(d => {
                 if (d.type === "color" && !seenColors.has(d.color)) {
                     seenColors.add(d.color);
@@ -609,7 +612,6 @@
         container.classList.remove('hidden');
         container.innerHTML = '';
         
-        // モード1の選択肢も安全なロジックに統一
         const wrongPool = rawData.filter(d => typeof d.id === 'number' && d.id !== q.id);
         const shuffledWrongPool = shuffleArray(wrongPool);
         const wrongChoices = shuffledWrongPool.slice(0, 3);

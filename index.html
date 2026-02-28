@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>化学暗記マスター</title>
+    <title>化学暗記マスター 完全版</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -520,12 +520,17 @@
         if (colorDir === "ion-to-color") {
             header.innerHTML = `<div style="font-family:serif; font-size:1.3em;">${q.eq}</div><div>${q.name}</div>`;
             const others = rawData.filter(d => d.type === "color" && d.color !== q.color);
-            const choices = [q.color, ...new Set(others.map(o => o.color))].sort(() => Math.random() - 0.5).slice(0, 4);
+            const otherColors = [...new Set(others.map(o => o.color))];
+            const wrongChoices = shuffleArray(otherColors).slice(0, 3);
+            const choices = shuffleArray([q.color, ...wrongChoices]);
+            
             choices.forEach(c => container.appendChild(createOption(getColoredText(c, c), c === q.color, q.color)));
         } else {
             header.innerHTML = `<div>${getColoredText(q.color, q.color)} のイオンは？</div>`;
             const others = rawData.filter(d => d.type === "color" && d.eq !== q.eq);
-            const choices = [q, ...others.sort(() => Math.random() - 0.5).slice(0, 3)].sort(() => Math.random() - 0.5);
+            const wrongChoices = shuffleArray(others).slice(0, 3);
+            const choices = shuffleArray([q, ...wrongChoices]);
+            
             choices.forEach(c => container.appendChild(createOption(`${c.eq} (${c.name})`, c.eq === q.eq, q.eq)));
         }
     }
@@ -540,8 +545,11 @@
         const container = document.getElementById('mode1-area');
         container.classList.remove('hidden');
         container.innerHTML = '';
+        
         const others = rawData.filter(d => typeof d.id === 'number' && d.id !== q.id);
-        const choices = [q, ...others.sort(() => Math.random() - 0.5).slice(0, 3)].sort(() => Math.random() - 0.5);
+        const wrongChoices = shuffleArray(others).slice(0, 3);
+        const choices = shuffleArray([q, ...wrongChoices]);
+        
         choices.forEach(c => container.appendChild(createOption(c.eq, c.id === q.id, q.eq)));
     }
 
@@ -706,11 +714,23 @@
                 item.style.borderRadius = "6px";
                 
                 if (q.type === 'color') {
-                    item.innerHTML = `
-                        <div style="font-size:0.8em; margin-bottom:5px;">色当て問題</div>
-                        <div style="font-weight:bold; font-family:serif;">${q.eq} ${q.name}</div>
-                        <div>正解: ${getColoredText(q.color, q.color)}</div>
-                    `;
+                    if (q.isGroup) {
+                        // モード6(色→イオン)のグループ化問題で間違えた場合
+                        const ions = rawData.filter(d => d.color === q.color);
+                        const ionStrs = ions.map(ion => `${ion.eq} ${ion.name}`).join(' / ');
+                        item.innerHTML = `
+                            <div style="font-size:0.8em; margin-bottom:5px;">色当て問題</div>
+                            <div style="font-weight:bold; font-family:serif; font-size:1.2em;">${getColoredText(q.color, q.color)}</div>
+                            <div style="margin-top:5px; font-size:0.9em;">正解: ${ionStrs}</div>
+                        `;
+                    } else {
+                        // モード5またはモード6(イオン→色)で間違えた場合
+                        item.innerHTML = `
+                            <div style="font-size:0.8em; margin-bottom:5px;">色当て問題</div>
+                            <div style="font-weight:bold; font-family:serif;">${q.eq} ${q.name}</div>
+                            <div style="margin-top:5px; font-size:0.9em;">正解: ${getColoredText(q.color, q.color)}</div>
+                        `;
+                    }
                 } else {
                     item.innerHTML = `
                         <div style="font-size:0.8em; margin-bottom:5px;">ID:${q.id} ${q.desc}</div>

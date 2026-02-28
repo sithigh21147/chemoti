@@ -530,7 +530,7 @@
         nextQuestion(); 
     }
 
-    function setupMode5(q) {
+function setupMode5(q) {
         const qHeader = document.getElementById('question-header');
         qHeader.classList.remove('hidden');
         document.getElementById('q-id-display').classList.add('hidden');
@@ -540,6 +540,7 @@
         container.innerHTML = '';
 
         if (colorDir === "ion-to-color") {
+            // イオン式 → 色 の場合
             header.innerHTML = `<div style="font-family:serif; font-size:1.3em;">${q.eq}</div><div>${q.name}</div>`;
             const others = rawData.filter(d => d.type === "color" && d.color !== q.color);
             const otherColors = [...new Set(others.map(o => o.color))];
@@ -548,8 +549,11 @@
             
             choices.forEach(c => container.appendChild(createOption(getColoredText(c, c), c === q.color, q.color)));
         } else {
+            // 色 → イオン式 の場合
             header.innerHTML = `<div>${getColoredText(q.color, q.color)} のイオンは？</div>`;
-            const others = rawData.filter(d => d.type === "color" && d.eq !== q.eq);
+            
+            // ★変更点：不正解の選択肢には「出題された色とは【違う色】のイオン」だけを抽出する
+            const others = rawData.filter(d => d.type === "color" && d.color !== q.color);
             const wrongChoices = shuffleArray(others).slice(0, 3);
             const choices = shuffleArray([q, ...wrongChoices]);
             

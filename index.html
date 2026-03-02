@@ -158,12 +158,13 @@
         <h1>化学暗記マスター</h1>
 
         <div class="settings-group" style="border-left: 5px solid #ec4899; margin-top: 15px;">
-            <h3>🎨 イオンの色当て設定</h3>
+            <h3>🎨 色当て設定</h3>
+            <div id="color-group-filter-container" class="group-filter-area" style="margin-bottom:10px;"></div>
             <div class="input-group">
                 <label>出題方向</label>
                 <select id="color-dir">
-                    <option value="ion-to-color">イオン式 → 色</option>
-                    <option value="color-to-ion">色 → イオン式</option>
+                    <option value="ion-to-color">化学式・名称 → 色</option>
+                    <option value="color-to-ion">色 → 化学式・名称</option>
                 </select>
             </div>
             <button class="btn" style="background-color:#ec4899;" onclick="startQuiz(5)">モード5：4択クイズ</button>
@@ -274,7 +275,7 @@
         "赤紫": "#C71585", "黄": "#FFD700", "赤橙": "#FF4500", "深青": "#00008B",
         "無色": "#A9A9A9", "血赤": "#8B0000", "黄橙": "#FFA500", "暗緑": "#00502E", 
         "白": "#E0E0E0", "淡黄": "#E6E3AA", "褐": "#B05E16", "灰緑": "#5B8063", 
-        "淡赤": "#FFC6DD", "青白": "#9FEBE7"
+        "淡赤": "#FFC6DD", "青白": "#9FEBE7", "赤褐": "#8B4513", "黒": "#000000"
     };
 
     // 全データ
@@ -380,58 +381,66 @@
         {id:94, eq:"Ag⁺+Cl⁻→AgCl", desc:"銀イオンと塩化物イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
         {id:95, eq:"2Ag⁺+CrO₄²⁻→Ag₂CrO₄", desc:"銀イオンとクロム酸イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
 
-        // 色当てデータ
-        {id:"c1", eq:"Cu²⁺", name:"銅(II)イオン", color:"青", desc:"水和した状態（水溶液中）の色", group:"色当て", type:"color"},
-        {id:"c2", eq:"Fe²⁺", name:"鉄(II)イオン", color:"淡緑", desc:"酸化されるとFe³⁺へ", group:"色当て", type:"color"},
-        {id:"c3", eq:"Fe³⁺", name:"鉄(III)イオン", color:"黄褐", desc:"", group:"色当て", type:"color"},
-        {id:"c4", eq:"Ni²⁺", name:"ニッケル(II)イオン", color:"緑", desc:"", group:"色当て", type:"color"},
-        {id:"c5", eq:"Cr³⁺", name:"クロム(III)イオン", color:"暗緑", desc:"条件により変化", group:"色当て", type:"color"},
-        {id:"c6", eq:"Mn²⁺", name:"マンガン(II)イオン", color:"淡赤または無色", desc:"ほぼ無色", group:"色当て", type:"color"},
-        {id:"c7", eq:"Co²⁺", name:"コバルト(II)イオン", color:"桃", desc:"", group:"色当て", type:"color"},
-        {id:"c8", eq:"MnO₄⁻", name:"過マンガン酸イオン", color:"赤紫", desc:"非常に強力な酸化剤", group:"色当て", type:"color"},
-        {id:"c9", eq:"CrO₄²⁻", name:"クロム酸イオン", color:"黄", desc:"液性を酸性にするとCr₂O₇²⁻に", group:"色当て", type:"color"},
-        {id:"c10", eq:"Cr₂O₇²⁻", name:"ニクロム酸イオン", color:"赤橙", desc:"液性を塩基性にするとCrO₄²⁻に", group:"色当て", type:"color"},
-        {id:"c11", eq:"[Cu(NH₃)₄]²⁺", name:"テトラアンミン銅(II)イオン", color:"深青", desc:"濃い青色", group:"色当て", type:"color"},
-        {id:"c12", eq:"[Ag(NH₃)₂]⁺", name:"ジアンミン銀(I)イオン", color:"無色", desc:"アンモニアに溶けて透明に", group:"色当て", type:"color"},
-        {id:"c13", eq:"[Zn(NH₃)₄]²⁺", name:"テトラアンミン亜鉛(II)イオン", color:"無色", desc:"亜鉛はほぼ無色", group:"色当て", type:"color"},
-        {id:"c14", eq:"[Fe(SCN)]²⁺", name:"チオシアナト鉄(III)イオン", color:"血赤", desc:"血のような赤色", group:"色当て", type:"color"},
-        {id:"c15", eq:"[Fe(CN)₆]⁴⁻", name:"ヘキサシアニド鉄(II)酸イオン", color:"黄", desc:"K₄[Fe(CN)₆]水溶液", group:"色当て", type:"color"},
-        {id:"c16", eq:"[Fe(CN)₆]³⁻", name:"ヘキサシアニド鉄(III)酸イオン", color:"黄橙", desc:"K₃[Fe(CN)₆]水溶液", group:"色当て", type:"color"}
-        {id:"c17", eq:"AgCl", name:"塩化銀", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)、ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て", type:"color"}
-        {id:"c18", eq:"AgBr", name:"臭化銀", color:"淡黄", desc:"ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て", type:"color"}
-        {id:"c19", eq:"AgI", name:"ヨウ化銀", color:"黄", desc:"ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て", type:"color"}
-        {id:"c20", eq:"Ag₂O", name:"酸化銀", color:"褐", desc:"Ag⁺を含む水溶液に塩基を加えて出る沈殿", group:"色当て", type:"color"}
-        {id:"c21", eq:"PbCl₂", name:"塩化鉛", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)", group:"色当て", type:"color"}
-        {id:"c22", eq:"Hg₂Cl₂", name:"塩化水銀(I)", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)", group:"色当て", type:"color"}
-        {id:"c23", eq:"CuS", name:"硫化銅(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て", type:"color"}
-        {id:"c24", eq:"HgS", name:"硫化水銀(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て", type:"color"}    
-        {id:"c25", eq:"PbS", name:"硫化鉛(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て", type:"color"}    
-        {id:"c26", eq:"Al(OH)₃", name:"水酸化アルミニウム(III)", color:"白", desc:"系統分析にて塩基液に硫化水素で沈殿(第3属)", group:"色当て", type:"color"}    
-        {id:"c27", eq:"FeO(OH)", name:"酸化水酸化鉄(III)", color:"赤褐", desc:"系統分析にてNH₄ClとNH₃で沈殿(第3属)", group:"色当て", type:"color"}    
-        {id:"c28", eq:"Cr(OH)₃", name:"水酸化クロム(III)", color:"灰緑", desc:"系統分析にてNH₄ClとNH₃で沈殿(第3属)", group:"色当て", type:"color"}    
-        {id:"c29", eq:"NiS", name:"硫化ニッケル(II)", color:"黒", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)", group:"色当て", type:"color"}    
-        {id:"c30", eq:"ZnS", name:"硫化亜鉛(II)", color:"白", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)、亜鉛と硫化物では例外", group:"色当て", type:"color"}    
-        {id:"c31", eq:"MnS", name:"硫化マンガン(II)", color:"淡赤", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)、硫化物では例外", group:"色当て", type:"color"}  
-        {id:"c32", eq:"CaCO₃", name:"炭酸カルシウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て", type:"color"}    
-        {id:"c33", eq:"SrCO₃", name:"炭酸ストロンチウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て", type:"color"}
-        {id:"c34", eq:"BaCO₃", name:"炭酸バリウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て", type:"color"}  
-
-    
-    
+        // 色当てデータ（イオン）
+        {id:"c1", eq:"Cu²⁺", name:"銅(II)イオン", color:"青", desc:"水和した状態（水溶液中）の色", group:"色当て(イオン)", type:"color"},
+        {id:"c2", eq:"Fe²⁺", name:"鉄(II)イオン", color:"淡緑", desc:"酸化されるとFe³⁺へ", group:"色当て(イオン)", type:"color"},
+        {id:"c3", eq:"Fe³⁺", name:"鉄(III)イオン", color:"黄褐", desc:"", group:"色当て(イオン)", type:"color"},
+        {id:"c4", eq:"Ni²⁺", name:"ニッケル(II)イオン", color:"緑", desc:"", group:"色当て(イオン)", type:"color"},
+        {id:"c5", eq:"Cr³⁺", name:"クロム(III)イオン", color:"暗緑", desc:"条件により変化", group:"色当て(イオン)", type:"color"},
+        {id:"c6", eq:"Mn²⁺", name:"マンガン(II)イオン", color:"淡赤または無色", desc:"ほぼ無色", group:"色当て(イオン)", type:"color"},
+        {id:"c7", eq:"Co²⁺", name:"コバルト(II)イオン", color:"桃", desc:"", group:"色当て(イオン)", type:"color"},
+        {id:"c8", eq:"MnO₄⁻", name:"過マンガン酸イオン", color:"赤紫", desc:"非常に強力な酸化剤", group:"色当て(イオン)", type:"color"},
+        {id:"c9", eq:"CrO₄²⁻", name:"クロム酸イオン", color:"黄", desc:"液性を酸性にするとCr₂O₇²⁻に", group:"色当て(イオン)", type:"color"},
+        {id:"c10", eq:"Cr₂O₇²⁻", name:"ニクロム酸イオン", color:"赤橙", desc:"液性を塩基性にするとCrO₄²⁻に", group:"色当て(イオン)", type:"color"},
+        {id:"c11", eq:"[Cu(NH₃)₄]²⁺", name:"テトラアンミン銅(II)イオン", color:"深青", desc:"濃い青色", group:"色当て(イオン)", type:"color"},
+        {id:"c12", eq:"[Ag(NH₃)₂]⁺", name:"ジアンミン銀(I)イオン", color:"無色", desc:"アンモニアに溶けて透明に", group:"色当て(イオン)", type:"color"},
+        {id:"c13", eq:"[Zn(NH₃)₄]²⁺", name:"テトラアンミン亜鉛(II)イオン", color:"無色", desc:"亜鉛はほぼ無色", group:"色当て(イオン)", type:"color"},
+        {id:"c14", eq:"[Fe(SCN)]²⁺", name:"チオシアナト鉄(III)イオン", color:"血赤", desc:"血のような赤色", group:"色当て(イオン)", type:"color"},
+        {id:"c15", eq:"[Fe(CN)₆]⁴⁻", name:"ヘキサシアニド鉄(II)酸イオン", color:"黄", desc:"K₄[Fe(CN)₆]水溶液", group:"色当て(イオン)", type:"color"},
+        {id:"c16", eq:"[Fe(CN)₆]³⁻", name:"ヘキサシアニド鉄(III)酸イオン", color:"黄橙", desc:"K₃[Fe(CN)₆]水溶液", group:"色当て(イオン)", type:"color"},
+        
+        // 色当てデータ（沈殿）
+        {id:"c17", eq:"AgCl", name:"塩化銀", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)、ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て(沈殿)", type:"color"},
+        {id:"c18", eq:"AgBr", name:"臭化銀", color:"淡黄", desc:"ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て(沈殿)", type:"color"},
+        {id:"c19", eq:"AgI", name:"ヨウ化銀", color:"黄", desc:"ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て(沈殿)", type:"color"},
+        {id:"c20", eq:"Ag₂O", name:"酸化銀", color:"褐", desc:"Ag⁺を含む水溶液に塩基を加えて出る沈殿", group:"色当て(沈殿)", type:"color"},
+        {id:"c21", eq:"PbCl₂", name:"塩化鉛", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c22", eq:"Hg₂Cl₂", name:"塩化水銀(I)", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c23", eq:"CuS", name:"硫化銅(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て(沈殿)", type:"color"},
+        {id:"c24", eq:"HgS", name:"硫化水銀(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て(沈殿)", type:"color"},
+        {id:"c25", eq:"PbS", name:"硫化鉛(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て(沈殿)", type:"color"},
+        {id:"c26", eq:"Al(OH)₃", name:"水酸化アルミニウム(III)", color:"白", desc:"系統分析にて塩基液に硫化水素で沈殿(第3属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c27", eq:"FeO(OH)", name:"酸化水酸化鉄(III)", color:"赤褐", desc:"系統分析にてNH₄ClとNH₃で沈殿(第3属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c28", eq:"Cr(OH)₃", name:"水酸化クロム(III)", color:"灰緑", desc:"系統分析にてNH₄ClとNH₃で沈殿(第3属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c29", eq:"NiS", name:"硫化ニッケル(II)", color:"黒", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c30", eq:"ZnS", name:"硫化亜鉛(II)", color:"白", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)、亜鉛と硫化物では例外", group:"色当て(沈殿)", type:"color"},
+        {id:"c31", eq:"MnS", name:"硫化マンガン(II)", color:"淡赤", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)、硫化物では例外", group:"色当て(沈殿)", type:"color"},
+        {id:"c32", eq:"CaCO₃", name:"炭酸カルシウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c33", eq:"SrCO₃", name:"炭酸ストロンチウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c34", eq:"BaCO₃", name:"炭酸バリウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て(沈殿)", type:"color"}
     ];
 
-    let currentMode, quizList, currentIndex, score, colorDir, wrongQuestions = [];
+    let currentMode, quizList, currentIndex, score, colorDir, wrongQuestions = [], activeColorGroups = [];
     let coeffAnswers = [], selectedCoeffInput = null, mode3InputBuffer = [];
     const screens = { home: document.getElementById('screen-home'), play: document.getElementById('screen-play'), result: document.getElementById('screen-result'), list: document.getElementById('screen-list') };
 
     window.onload = () => { renderGroupFilters(); };
 
     function renderGroupFilters() {
+        // 反応式用のグループ
         const container = document.getElementById('group-filter-container');
-        const groups = [...new Set(rawData.map(item => item.group))].filter(g => g !== "色当て");
+        const groups = [...new Set(rawData.filter(item => item.type !== "color").map(item => item.group))];
         container.innerHTML = groups.map(g => `
             <label class="group-chip"><input type="checkbox" name="group-select" value="${g}" checked> ${g}</label>
         `).join('');
+
+        // 色当て用のグループ（炎色反応はデータが追加されることを想定して予め配置）
+        const colorContainer = document.getElementById('color-group-filter-container');
+        const colorGroups = ["色当て(イオン)", "色当て(沈殿)", "色当て(炎色反応)"];
+        colorContainer.innerHTML = colorGroups.map(g => {
+            const label = g.replace("色当て(", "").replace(")", "");
+            return `<label class="group-chip"><input type="checkbox" name="color-group-select" value="${g}" checked> ${label}</label>`;
+        }).join('');
     }
 
     function getColoredText(text, colorName) {
@@ -439,12 +448,11 @@
         return `<span class="color-underline" style="--u-color: ${hex}">${text}</span>`;
     }
 
-    // ★修正箇所：iOS等のスマホブラウザにおける配列破壊バグを防止する安全なシャッフル
+    // iOS等のスマホブラウザにおける配列破壊バグを防止する安全なシャッフル
     function shuffleArray(array) {
         const a = [...array];
         for (let i = a.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            // 分割代入を使わずに、確実に入れ替える
             const temp = a[i];
             a[i] = a[j];
             a[j] = temp;
@@ -458,7 +466,11 @@
         let list = [];
 
         if (mode === 5 || mode === 6) {
-            const colorData = rawData.filter(d => d.type === "color");
+            activeColorGroups = Array.from(document.querySelectorAll('input[name="color-group-select"]:checked')).map(cb => cb.value);
+            const colorData = rawData.filter(d => d.type === "color" && activeColorGroups.includes(d.group));
+            
+            if (colorData.length === 0) return alert("選択された色当てグループにデータがありません。");
+
             if (colorDir === "color-to-ion" && mode === 6) {
                 const uniqueColors = [...new Set(colorData.map(d => d.color))];
                 list = uniqueColors.map(c => ({ color: c, isGroup: true, type: "color" }));
@@ -470,10 +482,10 @@
             const start = parseInt(document.getElementById('start-id').value) || 1;
             const end = parseInt(document.getElementById('end-id').value) || 999;
             list = rawData.filter(d => selectedGroups.includes(d.group) && typeof d.id === 'number' && d.id >= start && d.id <= end);
+            
+            if (list.length === 0) return alert("条件に合う問題がありません。");
         }
 
-        if (list.length === 0) return alert("条件に合う問題がありません。");
-        
         if (document.getElementById('is-random').checked) {
             quizList = shuffleArray(list);
         } else {
@@ -551,7 +563,7 @@
             if (colorDir === "ion-to-color") {
                 content.innerHTML = `<div style="font-size:2.2em;">${getColoredText(q.color, q.color)}</div><div style="margin-top:10px; font-size:0.9em; color:#666;">${q.desc}</div>`;
             } else {
-                const ions = rawData.filter(d => d.color === q.color);
+                const ions = rawData.filter(d => d.color === q.color && activeColorGroups.includes(d.group));
                 content.innerHTML = ions.map(ion => `
                     <div style="margin-bottom:15px;">
                         <div style="font-size:1.8em; font-family:serif;">${getColoredText(ion.eq, q.color)}</div>
@@ -570,7 +582,6 @@
         nextQuestion(); 
     }
 
-    // ★修正箇所：正解を確実に保持しつつ、安全なシャッフル関数を適用する
     function setupMode5(q) {
         const qHeader = document.getElementById('question-header');
         qHeader.classList.remove('hidden');
@@ -583,41 +594,33 @@
         if (colorDir === "ion-to-color") {
             header.innerHTML = `<div style="font-family:serif; font-size:1.3em;">${q.eq}</div><div>${q.name}</div>`;
             
-            // 1. 正解の色以外の色を全て重複なしで集める
             const wrongPool = [];
             rawData.forEach(d => {
-                if (d.type === "color" && d.color !== q.color && !wrongPool.includes(d.color)) {
+                if (d.type === "color" && activeColorGroups.includes(d.group) && d.color !== q.color && !wrongPool.includes(d.color)) {
                     wrongPool.push(d.color);
                 }
             });
             
-            // 2. シャッフルして先頭3つを不正解として選ぶ
             const shuffledWrongPool = shuffleArray(wrongPool);
             const wrongChoices = shuffledWrongPool.slice(0, 3);
-            
-            // 3. 正解1個と不正解3個を合わせて、再度シャッフルする
             const choices = shuffleArray([q.color, ...wrongChoices]);
             
             choices.forEach(c => container.appendChild(createOption(getColoredText(c, c), c === q.color, q.color)));
             
         } else {
-            header.innerHTML = `<div>${getColoredText(q.color, q.color)} のイオンは？</div>`;
+            header.innerHTML = `<div>${getColoredText(q.color, q.color)} の物質（イオン・沈殿）は？</div>`;
             
-            // 1. 正解と同じ色を持つイオンを除外し、他のイオンを集める
             const wrongPool = [];
             const seenColors = new Set([q.color]); 
             rawData.forEach(d => {
-                if (d.type === "color" && !seenColors.has(d.color)) {
+                if (d.type === "color" && activeColorGroups.includes(d.group) && !seenColors.has(d.color)) {
                     seenColors.add(d.color);
                     wrongPool.push(d);
                 }
             });
             
-            // 2. シャッフルして先頭3つを不正解として選ぶ
             const shuffledWrongPool = shuffleArray(wrongPool);
             const wrongChoices = shuffledWrongPool.slice(0, 3);
-            
-            // 3. 正解1個と不正解3個を合わせて、再度シャッフルする
             const choices = shuffleArray([q, ...wrongChoices]);
             
             choices.forEach(c => container.appendChild(createOption(`${c.eq} (${c.name})`, c.eq === q.eq, q.eq)));
@@ -804,7 +807,7 @@
                 
                 if (q.type === 'color') {
                     if (q.isGroup) {
-                        const ions = rawData.filter(d => d.color === q.color);
+                        const ions = rawData.filter(d => d.color === q.color && activeColorGroups.includes(d.group));
                         const ionStrs = ions.map(ion => `${ion.eq} ${ion.name}`).join(' / ');
                         item.innerHTML = `
                             <div style="font-size:0.8em; margin-bottom:5px;">色当て問題</div>
@@ -837,12 +840,21 @@
 
     function showDataList() {
         const container = document.getElementById('full-list-container');
-        container.innerHTML = rawData.map(item => `
+        container.innerHTML = rawData.map(item => {
+            let badgeText = item.group;
+            if (item.type === 'color') {
+                badgeText = item.group.replace("色当て(", "").replace(")", "");
+            }
+            return `
             <div style="background:white; padding:10px; margin-bottom:5px; border-radius:5px; border:1px solid #ddd;">
-                <div style="font-weight:bold;">${item.type === 'color' ? '🎨' : 'ID:' + item.id} ${item.eq}</div>
-                <div style="font-size:0.9em; color:#444;">${item.type === 'color' ? item.name + ' (' + getColoredText(item.color, item.color) + ')' : item.desc}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:bold;">${item.type === 'color' ? '🎨' : 'ID:' + item.id} ${item.eq}</div>
+                    <span class="group-badge" style="background-color:#dbeafe; color:#1e40af; font-size:0.7em; padding:2px 5px; border-radius:4px;">${badgeText}</span>
+                </div>
+                <div style="font-size:0.9em; color:#444; margin-top:5px;">${item.type === 'color' ? item.name + ' (' + getColoredText(item.color, item.color) + ')' : item.desc}</div>
             </div>
-        `).join('');
+            `;
+        }).join('');
         showScreen('list');
     }
 </script>

@@ -272,7 +272,9 @@
         "青": "#0000FF", "淡緑": "#90EE90", "黄褐": "#B8860B", "緑": "#008000",
         "緑（または紫）": "#2E8B57", "淡赤または無色": "#FFC6DD", "桃": "#FFC0CB",
         "赤紫": "#C71585", "黄": "#FFD700", "赤橙": "#FF4500", "深青": "#00008B",
-        "無色": "#A9A9A9", "血赤": "#8B0000", "黄橙": "#FFA500", "暗緑": "#00502E"
+        "無色": "#A9A9A9", "血赤": "#8B0000", "黄橙": "#FFA500", "暗緑": "#00502E", 
+        "白": "#E0E0E0", "淡黄": "#E6E3AA", "褐": "#B05E16", "灰緑": "#5B8063", 
+        "淡赤": "#FFC6DD", 
     };
 
     // 全データ
@@ -391,10 +393,32 @@
         {id:"c10", eq:"Cr₂O₇²⁻", name:"ニクロム酸イオン", color:"赤橙", desc:"液性を塩基性にするとCrO₄²⁻に", group:"色当て", type:"color"},
         {id:"c11", eq:"[Cu(NH₃)₄]²⁺", name:"テトラアンミン銅(II)イオン", color:"深青", desc:"濃い青色", group:"色当て", type:"color"},
         {id:"c12", eq:"[Ag(NH₃)₂]⁺", name:"ジアンミン銀(I)イオン", color:"無色", desc:"アンモニアに溶けて透明に", group:"色当て", type:"color"},
-        {id:"c13", eq:"[Zn(NH₃)₄]²⁺", name:"テトラアンミン亜鉛(II)イオン", color:"無色", desc:"亜鉛は常に無色", group:"色当て", type:"color"},
+        {id:"c13", eq:"[Zn(NH₃)₄]²⁺", name:"テトラアンミン亜鉛(II)イオン", color:"無色", desc:"亜鉛はほぼ無色", group:"色当て", type:"color"},
         {id:"c14", eq:"[Fe(SCN)]²⁺", name:"チオシアナト鉄(III)イオン", color:"血赤", desc:"血のような赤色", group:"色当て", type:"color"},
         {id:"c15", eq:"[Fe(CN)₆]⁴⁻", name:"ヘキサシアニド鉄(II)酸イオン", color:"黄", desc:"K₄[Fe(CN)₆]水溶液", group:"色当て", type:"color"},
         {id:"c16", eq:"[Fe(CN)₆]³⁻", name:"ヘキサシアニド鉄(III)酸イオン", color:"黄橙", desc:"K₃[Fe(CN)₆]水溶液", group:"色当て", type:"color"}
+        {id:"c17", eq:"AgCl", name:"塩化銀", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)、ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て", type:"color"}
+        {id:"c18", eq:"AgBr", name:"臭化銀", color:"淡黄", desc:"ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て", type:"color"}
+        {id:"c19", eq:"AgI", name:"ヨウ化銀", color:"黄", desc:"ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て", type:"color"}
+        {id:"c20", eq:"Ag₂O", name:"酸化銀", color:"褐", desc:"Ag⁺を含む水溶液に塩基を加えて出る沈殿", group:"色当て", type:"color"}
+        {id:"c21", eq:"PbCl₂", name:"塩化鉛", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)", group:"色当て", type:"color"}
+        {id:"c22", eq:"Hg₂Cl₂", name:"塩化水銀(I)", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)", group:"色当て", type:"color"}
+        {id:"c23", eq:"CuS", name:"硫化銅(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て", type:"color"}
+        {id:"c24", eq:"HgS", name:"硫化水銀(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て", type:"color"}    
+        {id:"c25", eq:"PbS", name:"硫化鉛(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て", type:"color"}    
+        {id:"c26", eq:"Al(OH)₃", name:"水酸化アルミニウム(III)", color:"白", desc:"系統分析にて塩基液に硫化水素で沈殿(第3属)", group:"色当て", type:"color"}    
+        {id:"c27", eq:"FeO(OH)", name:"酸化水酸化鉄(III)", color:"赤褐", desc:"系統分析にてNH₄ClとNH₃で沈殿(第3属)", group:"色当て", type:"color"}    
+        {id:"c28", eq:"Cr(OH)₃", name:"水酸化クロム(III)", color:"灰緑", desc:"系統分析にてNH₄ClとNH₃で沈殿(第3属)", group:"色当て", type:"color"}    
+        {id:"c29", eq:"NiS", name:"硫化ニッケル(II)", color:"黒", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)", group:"色当て", type:"color"}    
+        {id:"c30", eq:"ZnS", name:"硫化亜鉛(II)", color:"白", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)、亜鉛と硫化物では例外", group:"色当て", type:"color"}    
+        {id:"c31", eq:"MnS", name:"硫化マンガン(II)", color:"淡赤", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)、硫化物では例外", group:"色当て", type:"color"}  
+        {id:"c32", eq:"CaCO₃", name:"炭酸カルシウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て", type:"color"}    
+        {id:"c33", eq:"SrCO₃", name:"炭酸ストロンチウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て", type:"color"}
+        {id:"c34", eq:"BaCO₃", name:"炭酸バリウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て", type:"color"}  
+        {id:"c35", eq:"Na⁺", name:"ナトリウムイオン", color:"黄", desc:"系統分析にて最後まで余る(第6属)、", group:"色当て", type:"color"}  
+        {id:"c36", eq:"K⁺", name:"カリウムイオン", color:"無色", desc:"系統分析にて最後まで余る(第6属)、", group:"色当て", type:"color"}  
+        {id:"c37", eq:"Mg²⁺", name:"マグネシウムイオン", color:"無色", desc:"系統分析にて最後まで余る(第6属)、", group:"色当て", type:"color"}  
+    
     ];
 
     let currentMode, quizList, currentIndex, score, colorDir, wrongQuestions = [];

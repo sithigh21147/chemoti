@@ -19,14 +19,13 @@
             --accent: #f59e0b;
         }
 
+        /* 二重スクロール防止のため、bodyで全体をスクロールさせる */
         body {
             font-family: "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
             padding: 10px;
-            display: flex;
-            justify-content: center;
             min-height: 100vh;
         }
 
@@ -36,20 +35,11 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 700px;
+            margin: 0 auto;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
             position: relative;
             padding-bottom: 40px;
-            max-height: 95vh;
-            overflow: hidden;
-        }
-        
-        .scroll-container {
-             overflow-y: auto;
-             padding-right: 5px;
-             scrollbar-width: thin; 
+            box-sizing: border-box;
         }
 
         h1, h2, h3 { text-align: center; margin: 0; color: var(--secondary); }
@@ -134,7 +124,58 @@
         .coeff-area { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 5px; padding: 15px 5px; background-color: #f8fafc; border-radius: 8px; border: 2px dashed #cbd5e1; font-size: 1.1em; margin-bottom: 10px; }
         .coeff-input { width: 45px !important; height: 40px; font-size: 1.2em; margin: 0 2px; background-color: #fff; text-align: center; cursor: pointer; border: 2px solid #d1d5db; border-radius: 6px; font-weight: bold; color: var(--primary); }
         .active-input { border-color: var(--primary); background-color: #eff6ff; }
-        .build-display { min-height: 50px; background-color: #fff; border: 2px solid #2563eb; border-radius: 8px; padding: 10px; font-size: 1.2em; margin-bottom: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-family: serif; }
+        
+        .build-display { min-height: 50px; background-color: #fff; border: 2px solid #2563eb; border-radius: 8px; padding: 10px; font-size: 1.2em; margin-bottom: 10px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 5px; font-family: serif; }
+        
+        /* --- 構造式の絶対崩れないテーブル表示用CSS --- */
+        .struct-wrapper {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            display: inline-block;
+            margin: 0 auto;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+        .struct-table {
+            border-collapse: collapse;
+            margin: 0 auto;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+        }
+        .struct-table td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 2px 4px;
+            font-size: 1.2em;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .org-box { 
+            display: inline-block; 
+            min-width: 3ch; 
+            height: 1.5em; 
+            line-height: 1.5em; 
+            text-align: center; 
+            border: 2px solid #d1d5db; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            background-color: #fff; 
+            padding: 0 4px; 
+            font-weight: bold; 
+            color: var(--primary);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .org-box.active-input { 
+            border-color: var(--primary); 
+            background-color: #eff6ff; 
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+        }
+        .struct-ans-text {
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
         .keypad-area { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
         .keypad-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
         .key-btn { background-color: white; border: 1px solid #d1d5db; padding: 10px 0; border-radius: 6px; font-size: 1.2em; cursor: pointer; flex: 1 0 21%; max-width: 23%; font-weight: bold; }
@@ -145,7 +186,7 @@
         .correct { background-color: #d1fae5; color: #065f46; }
         .wrong { background-color: #fee2e2; color: #991b1b; }
         
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .btn-home { position: absolute; top: 15px; right: 15px; background-color: #9ca3af; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; width: auto;}
 
         .progress { text-align: center; font-size: 0.9em; color: #6b7280; margin-top: 25px; }
@@ -154,8 +195,23 @@
 <body>
 
 <div class="container" id="app">
-    <div id="screen-home" class="scroll-container">
+    <div id="screen-home">
         <h1>化学暗記マスター</h1>
+
+        <div class="settings-group" style="border-left: 5px solid #10b981; margin-top: 15px;">
+            <h3>🌿 有機化学（構造・名称）設定</h3>
+            <div id="organic-group-filter-container" class="group-filter-area" style="margin-bottom:10px;"></div>
+            <div class="input-group">
+                <label>出題方向</label>
+                <select id="organic-dir">
+                    <option value="name-to-eq">名称 → 構造式・分子式</option>
+                    <option value="eq-to-name">構造式・分子式 → 名称</option>
+                </select>
+            </div>
+            <button class="btn" style="background-color:#10b981;" onclick="startQuiz(7)">モード7：有機 4択クイズ</button>
+            <button class="btn" style="background-color:#059669;" onclick="startQuiz(8)">モード8：有機 フラッシュカード</button>
+            <button class="btn btn-outline" style="border-color:#059669; color:#059669;" onclick="startQuiz(9)">モード9：構造式・名称の組み立て</button>
+        </div>
 
         <div class="settings-group" style="border-left: 5px solid #ec4899; margin-top: 15px;">
             <h3>🎨 色当て設定</h3>
@@ -193,7 +249,7 @@
         <button class="btn" style="background-color: #6b7280; margin-top: 20px;" onclick="showDataList()">📖 収録データ一覧</button>
     </div>
 
-    <div id="screen-play" class="hidden scroll-container">
+    <div id="screen-play" class="hidden">
         <button class="btn-home" onclick="goHomeConfirm()">× 中断</button>
         <div class="progress">問 <span id="current-num">1</span> / <span id="total-num">10</span></div>
         
@@ -226,6 +282,20 @@
             <button class="btn" onclick="checkBuildAnswer()" style="margin-top:15px;">回答する</button>
         </div>
 
+        <div id="mode9-area" class="hidden">
+            <div id="organic-build-display" style="text-align:center; margin-bottom:15px;"></div>
+            <div class="keypad-area">
+                <div class="keypad-row" id="org-kb-1"></div>
+                <div class="keypad-row" id="org-kb-2"></div>
+                <div class="keypad-row" id="org-kb-3"></div>
+                <div class="keypad-row">
+                    <button class="key-btn key-control" onclick="mode9In('BS')">1字消す</button>
+                    <button class="key-btn key-control" onclick="mode9In('CLEAR')">全クリア</button>
+                </div>
+            </div>
+            <button class="btn" style="background-color:#10b981;" onclick="checkOrganicBuildAnswer()" style="margin-top:15px;">回答する</button>
+        </div>
+
         <div id="mode5-area" class="options-grid hidden"></div>
 
         <div id="fc-area" class="hidden">
@@ -247,7 +317,7 @@
         <button id="next-btn" class="btn hidden" onclick="nextQuestion()">次へ</button>
     </div>
 
-    <div id="screen-result" class="hidden scroll-container">
+    <div id="screen-result" class="hidden">
         <h2 style="margin-top:40px;">結果発表</h2>
         <div style="text-align: center; font-size: 2.5em; margin: 20px 0;"><span id="score-display">0</span> / <span id="score-total">0</span></div>
         <p style="text-align: center; margin-bottom:20px;" id="score-comment"></p>
@@ -260,7 +330,7 @@
         <button class="btn" style="margin-top:20px;" onclick="goHome()">ホームに戻る</button>
     </div>
 
-    <div id="screen-list" class="hidden scroll-container">
+    <div id="screen-list" class="hidden">
         <button class="btn-home" onclick="goHome()">× 閉じる</button>
         <h2 style="margin-top: 40px;">データ一覧</h2>
         <div id="full-list-container"></div>
@@ -269,7 +339,7 @@
 
 <script>
     // カラーコード定義
-const colorMap = {
+    const colorMap = {
         "青": "#0000FF", "淡緑": "#90EE90", "黄褐": "#B8860B", "緑": "#008000",
         "緑（または紫）": "#2E8B57", "淡赤または無色": "#FFC6DD", "桃": "#FFC0CB",
         "赤紫": "#C71585", "黄": "#FFD700", "赤橙": "#FF4500", "深青": "#00008B",
@@ -278,7 +348,8 @@ const colorMap = {
         "淡赤": "#FFC6DD", "青白": "#9FEBE7", "赤褐": "#8B4513", "黒": "#000000",
         "赤": "#FF0000", "紫": "#800080", "青緑": "#008B8B", "橙赤": "#FF4500", "紅": "#DC143C", "黄緑": "#9ACD32"
     };
-    // 全データ
+
+    // 全データ（一切省略なし）
     const rawData = [
         // 典型元素(2学期)
         {id:1, eq:"Zn+H₂SO₄→ZnSO₄+H₂", desc:"亜鉛と希硫酸から水素発生", group:"典型元素(2学期)"},
@@ -381,7 +452,7 @@ const colorMap = {
         {id:94, eq:"Ag⁺+Cl⁻→AgCl", desc:"銀イオンと塩化物イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
         {id:95, eq:"2Ag⁺+CrO₄²⁻→Ag₂CrO₄", desc:"銀イオンとクロム酸イオンの沈殿反応【加熱なし】", group:"遷移元素(反応式)"},
 
-        // 色当てデータ（イオン）
+        // 色当てデータ
         {id:"c1", eq:"Cu²⁺", name:"銅(II)イオン", color:"青", desc:"水和した状態（水溶液中）の色", group:"色当て(イオン)", type:"color"},
         {id:"c2", eq:"Fe²⁺", name:"鉄(II)イオン", color:"淡緑", desc:"酸化されるとFe³⁺へ", group:"色当て(イオン)", type:"color"},
         {id:"c3", eq:"Fe³⁺", name:"鉄(III)イオン", color:"黄褐", desc:"", group:"色当て(イオン)", type:"color"},
@@ -398,57 +469,108 @@ const colorMap = {
         {id:"c14", eq:"[Fe(SCN)]²⁺", name:"チオシアナト鉄(III)イオン", color:"血赤", desc:"血のような赤色", group:"色当て(イオン)", type:"color"},
         {id:"c15", eq:"[Fe(CN)₆]⁴⁻", name:"ヘキサシアニド鉄(II)酸イオン", color:"黄", desc:"K₄[Fe(CN)₆]水溶液", group:"色当て(イオン)", type:"color"},
         {id:"c16", eq:"[Fe(CN)₆]³⁻", name:"ヘキサシアニド鉄(III)酸イオン", color:"黄橙", desc:"K₃[Fe(CN)₆]水溶液", group:"色当て(イオン)", type:"color"},
-        
-        // 色当てデータ（沈殿）
-        {id:"c17", eq:"AgCl", name:"塩化銀", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)、ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て(沈殿)", type:"color"},
+        {id:"c17", eq:"AgCl", name:"塩化銀", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)", group:"色当て(沈殿)", type:"color"},
         {id:"c18", eq:"AgBr", name:"臭化銀", color:"淡黄", desc:"ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て(沈殿)", type:"color"},
         {id:"c19", eq:"AgI", name:"ヨウ化銀", color:"黄", desc:"ハロゲン化銀はフッ化銀以外水に溶けずに沈殿", group:"色当て(沈殿)", type:"color"},
         {id:"c20", eq:"Ag₂O", name:"酸化銀", color:"褐", desc:"Ag⁺を含む水溶液に塩基を加えて出る沈殿", group:"色当て(沈殿)", type:"color"},
         {id:"c21", eq:"PbCl₂", name:"塩化鉛", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)", group:"色当て(沈殿)", type:"color"},
         {id:"c22", eq:"Hg₂Cl₂", name:"塩化水銀(I)", color:"白", desc:"系統分析にて希塩酸で沈殿(第1属)", group:"色当て(沈殿)", type:"color"},
-        {id:"c23", eq:"CuS", name:"硫化銅(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て(沈殿)", type:"color"},
-        {id:"c24", eq:"HgS", name:"硫化水銀(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て(沈殿)", type:"color"},
-        {id:"c25", eq:"PbS", name:"硫化鉛(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)、亜鉛以外の硫化物はほぼ黒", group:"色当て(沈殿)", type:"color"},
+        {id:"c23", eq:"CuS", name:"硫化銅(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c24", eq:"HgS", name:"硫化水銀(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c25", eq:"PbS", name:"硫化鉛(II)", color:"黒", desc:"系統分析にて酸性液に硫化水素で沈殿(第2属)", group:"色当て(沈殿)", type:"color"},
         {id:"c26", eq:"Al(OH)₃", name:"水酸化アルミニウム(III)", color:"白", desc:"系統分析にて塩基液に硫化水素で沈殿(第3属)", group:"色当て(沈殿)", type:"color"},
         {id:"c27", eq:"FeO(OH)", name:"酸化水酸化鉄(III)", color:"赤褐", desc:"系統分析にてNH₄ClとNH₃で沈殿(第3属)", group:"色当て(沈殿)", type:"color"},
         {id:"c28", eq:"Cr(OH)₃", name:"水酸化クロム(III)", color:"灰緑", desc:"系統分析にてNH₄ClとNH₃で沈殿(第3属)", group:"色当て(沈殿)", type:"color"},
         {id:"c29", eq:"NiS", name:"硫化ニッケル(II)", color:"黒", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)", group:"色当て(沈殿)", type:"color"},
-        {id:"c30", eq:"ZnS", name:"硫化亜鉛(II)", color:"白", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)、亜鉛と硫化物では例外", group:"色当て(沈殿)", type:"color"},
-        {id:"c31", eq:"MnS", name:"硫化マンガン(II)", color:"淡赤", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)、硫化物では例外", group:"色当て(沈殿)", type:"color"},
+        {id:"c30", eq:"ZnS", name:"硫化亜鉛(II)", color:"白", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c31", eq:"MnS", name:"硫化マンガン(II)", color:"淡赤", desc:"系統分析にて塩基液に硫化水素で沈殿(第4属)", group:"色当て(沈殿)", type:"color"},
         {id:"c32", eq:"CaCO₃", name:"炭酸カルシウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て(沈殿)", type:"color"},
         {id:"c33", eq:"SrCO₃", name:"炭酸ストロンチウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て(沈殿)", type:"color"},
         {id:"c34", eq:"BaCO₃", name:"炭酸バリウム", color:"白", desc:"系統分析にて炭酸アンモニウムで沈殿(第5属)", group:"色当て(沈殿)", type:"color"},
+        {id:"c35", eq:"Li", name:"リチウム", color:"赤", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
+        {id:"c36", eq:"Na", name:"ナトリウム", color:"黄", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
+        {id:"c37", eq:"K", name:"カリウム", color:"紫", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
+        {id:"c38", eq:"Cu", name:"銅", color:"青緑", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
+        {id:"c39", eq:"Ca", name:"カルシウム", color:"橙赤", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
+        {id:"c40", eq:"Sr", name:"ストロンチウム", color:"紅", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
+        {id:"c41", eq:"Ba", name:"バリウム", color:"黄緑", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
+
+        // 有機化学データ（絶対に崩れないテーブル用の structLayout を追加）
+        {id: "o1", eq: "メタ", name: "炭素数: 1", group: "有機化学(数詞)", type: "organic"},
+        {id: "o2", eq: "エタ", name: "炭素数: 2", group: "有機化学(数詞)", type: "organic"},
+        {id: "o3", eq: "プロパ", name: "炭素数: 3", group: "有機化学(数詞)", type: "organic"},
+        {id: "o4", eq: "ブタ", name: "炭素数: 4", group: "有機化学(数詞)", type: "organic"},
+        {id: "o5", eq: "ペンタ", name: "炭素数: 5", group: "有機化学(数詞)", type: "organic"},
+        {id: "o6", eq: "ヘキサ", name: "炭素数: 6", group: "有機化学(数詞)", type: "organic"},
+        {id: "o7", eq: "ヘプタ", name: "炭素数: 7", group: "有機化学(数詞)", type: "organic"},
+        {id: "o8", eq: "オクタ", name: "炭素数: 8", group: "有機化学(数詞)", type: "organic"},
+        {id: "o9", eq: "ノナ", name: "炭素数: 9", group: "有機化学(数詞)", type: "organic"},
+        {id: "o10", eq: "デカ", name: "炭素数: 10", group: "有機化学(数詞)", type: "organic"},
+
+        {id: "o11", eq: "-OH", name: "ヒドロキシ基", group: "有機化学(官能基)", type: "organic", structLayout: [["-", "[0]"]], structAns: ["OH"], nameParts: ["ヒドロキシ基"]},
+        {id: "o12", eq: "-CHO", name: "ホルミル基", group: "有機化学(官能基)", type: "organic", structLayout: [["", "O", "", ""], ["", "||", "", ""], ["-", "[0]", "-", "[1]"]], structAns: ["C", "H"], nameParts: ["ホルミル基"]},
+        {id: "o13", eq: "-CO-", name: "カルボニル基", group: "有機化学(官能基)", type: "organic", structLayout: [["", "O", ""], ["", "||", ""], ["-", "[0]", "-"]], structAns: ["C"], nameParts: ["カルボニル基"]},
+        {id: "o14", eq: "-COOH", name: "カルボキシ基", group: "有機化学(官能基)", type: "organic", structLayout: [["", "O", "", ""], ["", "||", "", ""], ["-", "[0]", "-", "[1]"]], structAns: ["C", "OH"], nameParts: ["カルボキシ基"]},
+        {id: "o15", eq: "-NH₂", name: "アミノ基", group: "有機化学(官能基)", type: "organic", structLayout: [["-", "[0]"]], structAns: ["NH₂"], nameParts: ["アミノ基"]},
+        {id: "o16", eq: "-NO₂", name: "ニトロ基", group: "有機化学(官能基)", type: "organic", structLayout: [["-", "[0]"]], structAns: ["NO₂"], nameParts: ["ニトロ基"]},
+        {id: "o17", eq: "-SO₃H", name: "スルホ基", group: "有機化学(官能基)", type: "organic", structLayout: [["-", "[0]"]], structAns: ["SO₃H"], nameParts: ["スルホ基"]},
+        {id: "o18", eq: "-O-", name: "エーテル結合", group: "有機化学(官能基)", type: "organic", structLayout: [["-", "[0]", "-"]], structAns: ["O"], nameParts: ["エーテル結合"]},
+        {id: "o19", eq: "-COO-", name: "エステル結合", group: "有機化学(官能基)", type: "organic", structLayout: [["", "O", "", "", ""], ["", "||", "", "", ""], ["-", "[0]", "-", "[1]", "-"]], structAns: ["C", "O"], nameParts: ["エステル結合"]},
+        {id: "o20", eq: "-CONH-", name: "アミド結合", group: "有機化学(官能基)", type: "organic", structLayout: [["", "O", "", "", ""], ["", "||", "", "", ""], ["-", "[0]", "-", "[1]", "-"]], structAns: ["C", "NH"], nameParts: ["アミド結合"]},
+
+        {id: "o21", group: "有機化学(アルカン)", type: "organic", name: "メタン", eq: "CH₄", structLayout: [["", "", "[0]", "", ""], ["", "", "|", "", ""], ["[1]", "-", "[2]", "-", "[3]"], ["", "", "|", "", ""], ["", "", "[4]", "", ""]], structAns: ["H", "H", "C", "H", "H"], nameParts: ["メタン"]},
+        {id: "o22", group: "有機化学(アルカン)", type: "organic", name: "エタン", eq: "CH₃-CH₃", structLayout: [["[0]", "-", "[1]"]], structAns: ["CH₃", "CH₃"], nameParts: ["エタン"]},
+        {id: "o23", group: "有機化学(アルカン)", type: "organic", name: "プロパン", eq: "CH₃-CH₂-CH₃", structLayout: [["[0]", "-", "[1]", "-", "[2]"]], structAns: ["CH₃", "CH₂", "CH₃"], nameParts: ["プロパン"]},
+        {id: "o24", group: "有機化学(アルカン)", type: "organic", name: "ブタン", eq: "CH₃-CH₂-CH₂-CH₃", structLayout: [["[0]", "-", "[1]", "-", "[2]", "-", "[3]"]], structAns: ["CH₃", "CH₂", "CH₂", "CH₃"], nameParts: ["ブタン"]},
+        {id: "o25", group: "有機化学(アルカン)", type: "organic", name: "2-メチルプロパン", eq: "CH₃-CH(CH₃)-CH₃", structLayout: [["", "", "[0]", "", ""], ["", "", "|", "", ""], ["[1]", "-", "[2]", "-", "[3]"]], structAns: ["CH₃", "CH₃", "CH", "CH₃"], nameParts: ["2", "-", "メチル", "プロパン"]},
+        {id: "o26", group: "有機化学(アルカン)", type: "organic", name: "ペンタン", eq: "CH₃-(CH₂)₃-CH₃", structLayout: [["[0]", "-", "[1]", "-", "[2]", "-", "[3]", "-", "[4]"]], structAns: ["CH₃", "CH₂", "CH₂", "CH₂", "CH₃"], nameParts: ["ペンタン"]},
+        {id: "o27", group: "有機化学(アルカン)", type: "organic", name: "2-メチルブタン", eq: "CH₃-CH(CH₃)-CH₂-CH₃", structLayout: [["", "", "[0]", "", "", "", ""], ["", "", "|", "", "", "", ""], ["[1]", "-", "[2]", "-", "[3]", "-", "[4]"]], structAns: ["CH₃", "CH₃", "CH", "CH₂", "CH₃"], nameParts: ["2", "-", "メチル", "ブタン"]},
+        {id: "o28", group: "有機化学(アルカン)", type: "organic", name: "2,2-ジメチルプロパン", eq: "C(CH₃)₄", structLayout: [["", "", "[0]", "", ""], ["", "", "|", "", ""], ["[1]", "-", "[2]", "-", "[3]"], ["", "", "|", "", ""], ["", "", "[4]", "", ""]], structAns: ["CH₃", "CH₃", "C", "CH₃", "CH₃"], nameParts: ["2", ",", "2", "-", "ジメチル", "プロパン"]},
         
-        // 色当てデータ（炎色反応）
-        {id:"c35", eq:"Liの炎色反応", name:"リチウムの炎色反応", color:"赤", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
-        {id:"c36", eq:"Naの炎色反応", name:"ナトリウムの炎色反応", color:"黄", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
-        {id:"c37", eq:"Kの炎色反応", name:"カリウムの炎色反応", color:"赤紫", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
-        {id:"c38", eq:"Cuの炎色反応", name:"銅の炎色反応", color:"青緑", desc:"炎色反応（緑とも表現される）", group:"色当て(炎色反応)", type:"color"},
-        {id:"c39", eq:"Caの炎色反応", name:"カルシウムの炎色反応", color:"橙赤", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
-        {id:"c40", eq:"Srの炎色反応", name:"ストロンチウムの炎色反応", color:"紅", desc:"炎色反応（深赤とも表現される）", group:"色当て(炎色反応)", type:"color"},
-        {id:"c41", eq:"Baの炎色反応", name:"バリウムの炎色反応", color:"黄緑", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"}
+        {id: "o30", group: "有機化学(シクロアルカン)", type: "organic", name: "シクロプロパン", eq: "C₃H₆(環状)", structLayout: [["", "[0]", ""], ["/", "", "\\"], ["[1]", "-", "[2]"]], structAns: ["CH₂", "CH₂", "CH₂"], nameParts: ["シクロ", "プロパン"]},
+        {id: "o31", group: "有機化学(シクロアルカン)", type: "organic", name: "シクロブタン", eq: "C₄H₈(環状)", structLayout: [["[0]", "-", "[1]"], ["|", "", "|"], ["[2]", "-", "[3]"]], structAns: ["CH₂", "CH₂", "CH₂", "CH₂"], nameParts: ["シクロ", "ブタン"]},
+        {id: "o32", group: "有機化学(シクロアルカン)", type: "organic", name: "シクロペンタン", eq: "C₅H₁₀(環状)", structLayout: [["", "[0]", ""], ["/", "", "\\"], ["[1]", "", "[2]"], ["\\", "", "/"], ["[3]", "-", "[4]"]], structAns: ["CH₂", "CH₂", "CH₂", "CH₂", "CH₂"], nameParts: ["シクロ", "ペンタン"]},
+        {id: "o33", group: "有機化学(シクロアルカン)", type: "organic", name: "シクロヘキサン", eq: "C₆H₁₂(環状)", structLayout: [["", "[0]", "-", "[1]", ""], ["/", "", "", "", "\\"], ["[2]", "", "", "", "[3]"], ["\\", "", "", "", "/"], ["", "[4]", "-", "[5]", ""]], structAns: ["CH₂", "CH₂", "CH₂", "CH₂", "CH₂", "CH₂"], nameParts: ["シクロ", "ヘキサン"]},
+
+        {id: "o34", group: "有機化学(アルケン)", type: "organic", name: "エチレン", eq: "CH₂=CH₂", structLayout: [["[0]", "=", "[1]"]], structAns: ["CH₂", "CH₂"], nameParts: ["エチレン"]},
+        {id: "o35", group: "有機化学(アルケン)", type: "organic", name: "プロペン", eq: "CH₂=CH-CH₃", structLayout: [["[0]", "=", "[1]", "-", "[2]"]], structAns: ["CH₂", "CH", "CH₃"], nameParts: ["プロペン"]},
+        {id: "o36", group: "有機化学(アルケン)", type: "organic", name: "1-ブテン", eq: "CH₂=CH-CH₂-CH₃", structLayout: [["[0]", "=", "[1]", "-", "[2]", "-", "[3]"]], structAns: ["CH₂", "CH", "CH₂", "CH₃"], nameParts: ["1", "-", "ブテン"]},
+        {id: "o37_c", group: "有機化学(アルケン)", type: "organic", name: "シス-2-ブテン", eq: "CH₃-CH=CH-CH₃ (シス)", structLayout: [["[0]", "", "", "", "[1]"], ["", "\\", "", "/", ""], ["", "", "C=C", "", ""], ["", "/", "", "\\", ""], ["[2]", "", "", "", "[3]"]], structAns: ["CH₃", "CH₃", "H", "H"], nameParts: ["シス", "-", "2", "-", "ブテン"]},
+        {id: "o37_t", group: "有機化学(アルケン)", type: "organic", name: "トランス-2-ブテン", eq: "CH₃-CH=CH-CH₃ (トランス)", structLayout: [["[0]", "", "", "", "[1]"], ["", "\\", "", "/", ""], ["", "", "C=C", "", ""], ["", "/", "", "\\", ""], ["[2]", "", "", "", "[3]"]], structAns: ["CH₃", "H", "H", "CH₃"], nameParts: ["トランス", "-", "2", "-", "ブテン"]},
+        {id: "o38", group: "有機化学(アルケン)", type: "organic", name: "2-メチルプロペン", eq: "CH₂=C(CH₃)₂", structLayout: [["", "", "", "[0]"], ["", "", "", "|"], ["[1]", "=", "[2]", "-", "[3]"]], structAns: ["CH₃", "CH₂", "C", "CH₃"], nameParts: ["2", "-", "メチル", "プロペン"]},
+
+        {id: "o39", group: "有機化学(アルキン)", type: "organic", name: "アセチレン", eq: "CH≡CH", structLayout: [["[0]", "≡", "[1]"]], structAns: ["CH", "CH"], nameParts: ["アセチレン"]},
+        {id: "o40", group: "有機化学(アルキン)", type: "organic", name: "プロピン", eq: "CH≡C-CH₃", structLayout: [["[0]", "≡", "[1]", "-", "[2]"]], structAns: ["CH", "C", "CH₃"], nameParts: ["プロピン"]},
+        {id: "o41", group: "有機化学(アルキン)", type: "organic", name: "1-ブチン", eq: "CH≡C-CH₂-CH₃", structLayout: [["[0]", "≡", "[1]", "-", "[2]", "-", "[3]"]], structAns: ["CH", "C", "CH₂", "CH₃"], nameParts: ["1", "-", "ブチン"]},
+        {id: "o42", group: "有機化学(アルキン)", type: "organic", name: "2-ブチン", eq: "CH₃-C≡C-CH₃", structLayout: [["[0]", "-", "[1]", "≡", "[2]", "-", "[3]"]], structAns: ["CH₃", "C", "C", "CH₃"], nameParts: ["2", "-", "ブチン"]}
     ];
 
-    let currentMode, quizList, currentIndex, score, colorDir, wrongQuestions = [], activeColorGroups = [];
+    let currentMode, quizList, currentIndex, score, colorDir, organicDir, wrongQuestions = [], activeColorGroups = [], activeOrganicGroups = [];
     let coeffAnswers = [], selectedCoeffInput = null, mode3InputBuffer = [];
+    let organicAnswers = [], currentOrgInputIdx = 0;
     const screens = { home: document.getElementById('screen-home'), play: document.getElementById('screen-play'), result: document.getElementById('screen-result'), list: document.getElementById('screen-list') };
 
     window.onload = () => { renderGroupFilters(); };
 
     function renderGroupFilters() {
-        // 反応式用のグループ
         const container = document.getElementById('group-filter-container');
-        const groups = [...new Set(rawData.filter(item => item.type !== "color").map(item => item.group))];
+        const groups = [...new Set(rawData.filter(item => item.type !== "color" && item.type !== "organic").map(item => item.group))];
         container.innerHTML = groups.map(g => `
             <label class="group-chip"><input type="checkbox" name="group-select" value="${g}" checked> ${g}</label>
         `).join('');
 
-        // 色当て用のグループ（炎色反応はデータが追加されることを想定して予め配置）
         const colorContainer = document.getElementById('color-group-filter-container');
         const colorGroups = ["色当て(イオン)", "色当て(沈殿)", "色当て(炎色反応)"];
         colorContainer.innerHTML = colorGroups.map(g => {
             const label = g.replace("色当て(", "").replace(")", "");
             return `<label class="group-chip"><input type="checkbox" name="color-group-select" value="${g}" checked> ${label}</label>`;
+        }).join('');
+
+        const organicContainer = document.getElementById('organic-group-filter-container');
+        const organicGroups = [...new Set(rawData.filter(item => item.type === "organic").map(item => item.group))];
+        organicContainer.innerHTML = organicGroups.map(g => {
+            const label = g.replace("有機化学(", "").replace(")", "");
+            return `<label class="group-chip"><input type="checkbox" name="organic-group-select" value="${g}" checked> ${label}</label>`;
         }).join('');
     }
 
@@ -457,7 +579,6 @@ const colorMap = {
         return `<span class="color-underline" style="--u-color: ${hex}">${text}</span>`;
     }
 
-    // iOS等のスマホブラウザにおける配列破壊バグを防止する安全なシャッフル
     function shuffleArray(array) {
         const a = [...array];
         for (let i = a.length - 1; i > 0; i--) {
@@ -471,10 +592,10 @@ const colorMap = {
 
     function startQuiz(mode) {
         currentMode = mode;
-        colorDir = document.getElementById('color-dir').value;
         let list = [];
 
         if (mode === 5 || mode === 6) {
+            colorDir = document.getElementById('color-dir').value;
             activeColorGroups = Array.from(document.querySelectorAll('input[name="color-group-select"]:checked')).map(cb => cb.value);
             const colorData = rawData.filter(d => d.type === "color" && activeColorGroups.includes(d.group));
             
@@ -486,16 +607,24 @@ const colorMap = {
             } else {
                 list = [...colorData];
             }
+        } else if (mode === 7 || mode === 8 || mode === 9) {
+            organicDir = document.getElementById('organic-dir').value;
+            activeOrganicGroups = Array.from(document.querySelectorAll('input[name="organic-group-select"]:checked')).map(cb => cb.value);
+            list = rawData.filter(d => d.type === "organic" && activeOrganicGroups.includes(d.group));
+            
+            if (mode === 9 || mode === 8) {
+                list = list.filter(d => d.group !== "有機化学(数詞)");
+            }
+            if (list.length === 0) return alert("選択された有機化学グループに出題可能なデータがありません。");
         } else {
             const selectedGroups = Array.from(document.querySelectorAll('input[name="group-select"]:checked')).map(cb => cb.value);
             const start = parseInt(document.getElementById('start-id').value) || 1;
             const end = parseInt(document.getElementById('end-id').value) || 999;
             list = rawData.filter(d => selectedGroups.includes(d.group) && typeof d.id === 'number' && d.id >= start && d.id <= end);
-            
             if (list.length === 0) return alert("条件に合う問題がありません。");
         }
 
-        if (document.getElementById('is-random').checked) {
+        if (document.getElementById('is-random').checked || [5,6,7,8,9].includes(mode)) {
             quizList = shuffleArray(list);
         } else {
             quizList = list;
@@ -522,21 +651,237 @@ const colorMap = {
         document.getElementById('result-msg').style.display = 'none';
         document.getElementById('next-btn').classList.add('hidden');
         
-        ['mode1-area', 'mode2-area', 'mode3-area', 'mode5-area', 'fc-area'].forEach(id => document.getElementById(id).classList.add('hidden'));
+        ['mode1-area', 'mode2-area', 'mode3-area', 'mode5-area', 'mode9-area', 'fc-area'].forEach(id => document.getElementById(id).classList.add('hidden'));
 
-        if (currentMode === 6 || currentMode === 4) {
+        if (currentMode === 6 || currentMode === 4 || currentMode === 8) {
             setupFlashcard(q);
         } else if (currentMode === 5) {
             setupMode5(q);
+        } else if (currentMode === 7) {
+            setupMode7(q);
         } else if (currentMode === 1) {
             setupMode1(q);
         } else if (currentMode === 2) {
             setupMode2(q);
         } else if (currentMode === 3) {
             setupMode3(q);
+        } else if (currentMode === 9) {
+            setupMode9(q);
         }
     }
 
+    // ★絶対崩れない構造式テーブル描画関数
+    function renderStructTable(layoutArray, renderMode = "input", answersArray = []) {
+        if(!layoutArray) return "";
+        let html = '<div class="struct-wrapper"><table class="struct-table">';
+        layoutArray.forEach(row => {
+            html += '<tr>';
+            row.forEach(cell => {
+                if (!cell || cell === "") {
+                    html += '<td></td>';
+                } else if (cell.match(/\[(\d+)\]/)) {
+                    let idx = RegExp.$1;
+                    if (renderMode === "input") {
+                        html += `<td><span class="org-box" data-idx="${idx}"></span></td>`;
+                    } else if (renderMode === "answer") {
+                        html += `<td><span class="struct-ans-text">${answersArray[idx]}</span></td>`;
+                    }
+                } else {
+                    html += `<td>${cell}</td>`;
+                }
+            });
+            html += '</tr>';
+        });
+        html += '</table></div>';
+        return html;
+    }
+
+    // --- 有機構造式・名称の組み立て（モード9） ---
+    function setupMode9(q) {
+        if (!q.structLayout || !q.structAns) { nextQuestion(); return; }
+
+        const qHeader = document.getElementById('question-header');
+        qHeader.classList.remove('hidden');
+        document.getElementById('q-id-display').classList.add('hidden');
+        const mode9Area = document.getElementById('mode9-area');
+        mode9Area.classList.remove('hidden');
+        
+        organicAnswers = [];
+        const isNameToEq = (organicDir === "name-to-eq");
+
+        if (isNameToEq) {
+            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em;">${q.name}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>`;
+            
+            q.structAns.forEach((ans, idx) => { organicAnswers.push(ans); });
+            // 絶対崩れないテーブルモードで描画
+            document.getElementById('organic-build-display').innerHTML = renderStructTable(q.structLayout, "input");
+            
+            let pool = [...new Set(q.structAns)];
+            let dummies = ["CH₃", "CH₂", "CH", "C", "H", "OH", "O", "NH₂", "COOH", "CHO"];
+            dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
+            pool = shuffleArray(pool).slice(0, 10);
+            
+            renderOrgKeys(pool, false);
+            
+        } else {
+            // 色当てと統一して、正解埋め済みのテーブルを描画
+            document.getElementById('q-desc').innerHTML = `${renderStructTable(q.structLayout, "answer", q.structAns)}<div style="font-size:0.8em; color:#666; margin-top:5px;">の名称は？</div>`;
+            
+            let inputsHtml = "";
+            q.nameParts.forEach((part, idx) => {
+                organicAnswers.push(part);
+                inputsHtml += `<span class="org-box" data-idx="${idx}" style="margin:2px; height:1.8em; line-height:1.8em; padding:0 8px;"></span>`;
+            });
+            document.getElementById('organic-build-display').innerHTML = `<div style="display:flex; justify-content:center; flex-wrap:wrap; margin-top:10px;">${inputsHtml}</div>`;
+            
+            let words = q.nameParts.filter(p => !p.match(/^[0-9\-\,]+$/));
+            let pool = [...new Set(words)];
+            let dummies = ["メチル", "エチル", "プロパン", "ブタン", "ブテン", "シス", "トランス", "シクロ", "ヒドロキシ基", "カルボキシ基"];
+            dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
+            pool = shuffleArray(pool).slice(0, 8);
+            
+            renderOrgKeys(pool, true);
+        }
+
+        setTimeout(() => {
+            const inputs = document.querySelectorAll('.org-box');
+            inputs.forEach(inp => {
+                inp.onclick = (e) => {
+                    document.querySelectorAll('.org-box').forEach(i => i.classList.remove('active-input'));
+                    e.target.classList.add('active-input');
+                    currentOrgInputIdx = parseInt(e.target.getAttribute('data-idx'));
+                };
+            });
+            if(inputs.length > 0) {
+                inputs[0].classList.add('active-input');
+                currentOrgInputIdx = 0;
+            }
+        }, 10);
+    }
+
+    function renderOrgKeys(pool, includeNumToggle) {
+        const kb1 = document.getElementById('org-kb-1');
+        const kb2 = document.getElementById('org-kb-2'); 
+        kb1.innerHTML = '';
+        kb2.innerHTML = '';
+        kb2.classList.add('hidden');
+
+        pool.forEach(k => {
+            const b = document.createElement('button');
+            b.className = 'key-btn';
+            b.textContent = k;
+            b.onclick = () => mode9In(k);
+            kb1.appendChild(b);
+        });
+
+        if (includeNumToggle) {
+            const tb = document.createElement('button');
+            tb.className = 'key-btn key-op';
+            tb.textContent = "数字・記号";
+            tb.onclick = () => {
+                kb1.classList.toggle('hidden');
+                kb2.classList.toggle('hidden');
+            };
+            kb1.appendChild(tb);
+
+            const nums = ['0','1','2','3','4','5','6','7','8','9','-',','];
+            nums.forEach(n => {
+                const b = document.createElement('button');
+                b.className = 'key-btn';
+                b.textContent = n;
+                b.onclick = () => mode9In(n);
+                kb2.appendChild(b);
+            });
+            const backBtn = document.createElement('button');
+            backBtn.className = 'key-btn key-op';
+            backBtn.textContent = "戻る";
+            backBtn.onclick = () => {
+                kb1.classList.remove('hidden');
+                kb2.classList.add('hidden');
+            };
+            kb2.appendChild(backBtn);
+        }
+    }
+
+    function mode9In(v) {
+        const inputs = document.querySelectorAll('.org-box');
+        if (inputs.length === 0) return;
+
+        if (v === 'BS') {
+            inputs[currentOrgInputIdx].textContent = "";
+        } else if (v === 'CLEAR') {
+            inputs.forEach(i => i.textContent = "");
+            inputs.forEach(i => i.classList.remove('active-input'));
+            inputs[0].classList.add('active-input');
+            currentOrgInputIdx = 0;
+        } else {
+            inputs[currentOrgInputIdx].textContent = v;
+            if (currentOrgInputIdx < inputs.length - 1) {
+                inputs[currentOrgInputIdx].classList.remove('active-input');
+                currentOrgInputIdx++;
+                inputs[currentOrgInputIdx].classList.add('active-input');
+            }
+        }
+    }
+
+    function checkOrganicBuildAnswer() {
+        const inputs = document.querySelectorAll('.org-box');
+        let ok = true;
+        inputs.forEach((inp, idx) => {
+            if (inp.textContent !== organicAnswers[idx]) ok = false;
+        });
+        
+        const isNameToEq = (organicDir === "name-to-eq");
+        let ansHtml = "";
+
+        if (isNameToEq) {
+            ansHtml = renderStructTable(quizList[currentIndex].structLayout, "answer", quizList[currentIndex].structAns);
+        } else {
+            ansHtml = `<span style="font-size:1.2em; font-weight:bold; color:var(--wrong);">${quizList[currentIndex].name}</span>`;
+        }
+
+        const m = document.getElementById('result-msg'); 
+        m.style.display='block'; 
+        m.className = 'result-message ' + (ok ? 'correct' : 'wrong');
+        m.innerHTML = ok ? "正解！" : `不正解...<br><div style="font-size:0.9em; color:#666; margin-top:5px;">正解:</div>${ansHtml}`;
+        
+        if(ok) score++; 
+        else wrongQuestions.push(quizList[currentIndex]);
+        
+        document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    // --- 有機4択クイズ（モード7） ---
+    function setupMode7(q) {
+        const qHeader = document.getElementById('question-header');
+        qHeader.classList.remove('hidden');
+        document.getElementById('q-id-display').classList.add('hidden');
+        const header = document.getElementById('q-desc');
+        const container = document.getElementById('mode1-area');
+        container.classList.remove('hidden');
+        container.innerHTML = '';
+
+        const isNameToEq = (organicDir === "name-to-eq");
+
+        if (isNameToEq) {
+            header.innerHTML = `<div style="font-size:1.3em;">${q.name}</div><div style="font-size:0.8em; color:#666;">の構造式・分子式は？</div>`;
+        } else {
+            header.innerHTML = `<div style="font-family:serif; font-size:1.5em;">${q.eq}</div><div style="font-size:0.8em; color:#666;">の名称は？</div>`;
+        }
+
+        const wrongPool = rawData.filter(d => d.type === "organic" && activeOrganicGroups.includes(d.group) && d.id !== q.id);
+        const shuffledWrongPool = shuffleArray(wrongPool);
+        const wrongChoices = shuffledWrongPool.slice(0, 3);
+        const choices = shuffleArray([q, ...wrongChoices]);
+        
+        choices.forEach(c => {
+            const displayText = isNameToEq ? `<span style="font-family:serif;">${c.eq}</span>` : c.name;
+            const correctText = isNameToEq ? q.eq : q.name;
+            container.appendChild(createOption(displayText, c.id === q.id, correctText));
+        });
+    }
+
+    // --- フラッシュカード（モード4, 6, 8） ---
     function setupFlashcard(q) {
         document.getElementById('fc-area').classList.remove('hidden');
         document.getElementById('fc-front').classList.remove('hidden');
@@ -551,6 +896,13 @@ const colorMap = {
                 front.innerHTML = `<div style="font-size:1.8em; font-family:serif;">${q.eq}</div><div style="font-size:1.1em; color:#666;">${q.name}</div>`;
             } else {
                 front.innerHTML = `<div style="font-size:2.2em;">${getColoredText(q.color, q.color)}</div>`;
+            }
+        } else if (currentMode === 8) {
+            qHeader.classList.add('hidden');
+            if (organicDir === "name-to-eq") {
+                front.innerHTML = `<div style="font-size:1.8em;">${q.name}</div><div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>`;
+            } else {
+                front.innerHTML = `<div style="font-size:1.8em; font-family:serif;">${q.eq}</div><div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>`;
             }
         } else {
             qHeader.classList.remove('hidden');
@@ -580,6 +932,13 @@ const colorMap = {
                     </div>
                 `).join('');
             }
+        } else if (currentMode === 8) {
+            if (organicDir === "name-to-eq") {
+                let disp = q.structLayout ? renderStructTable(q.structLayout, "answer", q.structAns) : `<div style="font-size:1.8em; font-family:serif; font-weight:bold;">${q.eq}</div>`;
+                content.innerHTML = disp;
+            } else {
+                content.innerHTML = `<div style="font-size:2em; font-weight:bold;">${q.name}</div>`;
+            }
         } else {
             content.innerHTML = `<div style="font-family:serif; font-size:1.6em; font-weight:bold;">${q.eq}</div>`;
         }
@@ -591,6 +950,7 @@ const colorMap = {
         nextQuestion(); 
     }
 
+    // --- その他モード（5, 1, 2, 3） ---
     function setupMode5(q) {
         const qHeader = document.getElementById('question-header');
         qHeader.classList.remove('hidden');
@@ -602,23 +962,18 @@ const colorMap = {
 
         if (colorDir === "ion-to-color") {
             header.innerHTML = `<div style="font-family:serif; font-size:1.3em;">${q.eq}</div><div>${q.name}</div>`;
-            
             const wrongPool = [];
             rawData.forEach(d => {
                 if (d.type === "color" && activeColorGroups.includes(d.group) && d.color !== q.color && !wrongPool.includes(d.color)) {
                     wrongPool.push(d.color);
                 }
             });
-            
             const shuffledWrongPool = shuffleArray(wrongPool);
             const wrongChoices = shuffledWrongPool.slice(0, 3);
             const choices = shuffleArray([q.color, ...wrongChoices]);
-            
             choices.forEach(c => container.appendChild(createOption(getColoredText(c, c), c === q.color, q.color)));
-            
         } else {
-            header.innerHTML = `<div>${getColoredText(q.color, q.color)} の物質（イオン・沈殿）は？</div>`;
-            
+            header.innerHTML = `<div>${getColoredText(q.color, q.color)} の物質は？</div>`;
             const wrongPool = [];
             const seenColors = new Set([q.color]); 
             rawData.forEach(d => {
@@ -627,11 +982,9 @@ const colorMap = {
                     wrongPool.push(d);
                 }
             });
-            
             const shuffledWrongPool = shuffleArray(wrongPool);
             const wrongChoices = shuffledWrongPool.slice(0, 3);
             const choices = shuffleArray([q, ...wrongChoices]);
-            
             choices.forEach(c => container.appendChild(createOption(`${c.eq} (${c.name})`, c.eq === q.eq, q.eq)));
         }
     }
@@ -673,7 +1026,6 @@ const colorMap = {
         return div;
     }
 
-    // --- モード2（係数穴埋め） ---
     function setupMode2(q) {
         const qHeader = document.getElementById('question-header');
         qHeader.classList.remove('hidden');
@@ -714,10 +1066,7 @@ const colorMap = {
         m2k.innerHTML = '';
         [1,2,3,4,5,6,7,8,9,10,11,12].forEach(n => { 
             const b = document.createElement('button'); 
-            b.className='key-btn'; 
-            b.textContent=n; 
-            b.onclick=()=>mode2Keypad(n); 
-            m2k.appendChild(b); 
+            b.className='key-btn'; b.textContent=n; b.onclick=()=>mode2Keypad(n); m2k.appendChild(b); 
         });
     }
 
@@ -732,10 +1081,9 @@ const colorMap = {
         const inps = document.querySelectorAll('.coeff-input'); 
         let ok = true;
         inps.forEach((inp, i) => { if(parseInt(inp.value||1) !== coeffAnswers[i]) ok = false; });
-        showResultMsgMode23(ok, quizList[currentIndex].eq);
+        showResultMsgMode23HTML(ok, quizList[currentIndex].eq);
     }
 
-    // --- モード3（組み立て） ---
     function setupMode3(q) {
         const qHeader = document.getElementById('question-header');
         qHeader.classList.remove('hidden');
@@ -773,20 +1121,19 @@ const colorMap = {
 
     function checkBuildAnswer() { 
         const u = mode3InputBuffer.join("").replace(/\s/g, ""); 
-        showResultMsgMode23(u === quizList[currentIndex].eq, quizList[currentIndex].eq); 
+        showResultMsgMode23HTML(u === quizList[currentIndex].eq.replace(/\s/g, ""), quizList[currentIndex].eq); 
     }
 
-    function showResultMsgMode23(ok, ans) {
+    function showResultMsgMode23HTML(ok, ansHtml) {
         const m = document.getElementById('result-msg'); 
         m.style.display='block'; 
         m.className = 'result-message ' + (ok?'correct':'wrong');
-        m.textContent = ok ? "正解！" : "不正解...\n正解: " + ans;
+        m.innerHTML = ok ? "正解！" : `不正解...<br><span style="font-size:0.9em; color:#666;">正解:</span><br>${ansHtml}`;
         if(ok) score++; 
         else wrongQuestions.push(quizList[currentIndex]);
         document.getElementById('next-btn').classList.remove('hidden');
     }
 
-    // --- 共通ユーティリティ ---
     function nextQuestion() { currentIndex++; if (currentIndex < quizList.length) loadQuestion(); else showResult(); }
     
     function showResult() { 
@@ -830,6 +1177,23 @@ const colorMap = {
                             <div style="margin-top:5px; font-size:0.9em;">正解: ${getColoredText(q.color, q.color)}</div>
                         `;
                     }
+                } else if (q.type === 'organic') {
+                    let structHtml = q.structLayout ? renderStructTable(q.structLayout, "answer", q.structAns) : `<div style="font-family:serif; font-weight:bold; margin-top:5px;">${q.eq}</div>`;
+
+                    if (organicDir === "name-to-eq") {
+                        item.innerHTML = `
+                            <div style="font-size:0.8em; margin-bottom:5px;">${q.group}</div>
+                            <div style="font-weight:bold;">${q.name}</div>
+                            <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解:</div>
+                            ${structHtml}
+                        `;
+                    } else {
+                        item.innerHTML = `
+                            <div style="font-size:0.8em; margin-bottom:5px;">${q.group}</div>
+                            ${structHtml}
+                            <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解: ${q.name}</div>
+                        `;
+                    }
                 } else {
                     item.innerHTML = `
                         <div style="font-size:0.8em; margin-bottom:5px;">ID:${q.id} ${q.desc}</div>
@@ -853,14 +1217,16 @@ const colorMap = {
             let badgeText = item.group;
             if (item.type === 'color') {
                 badgeText = item.group.replace("色当て(", "").replace(")", "");
+            } else if (item.type === 'organic') {
+                badgeText = item.group.replace("有機化学(", "").replace(")", "");
             }
             return `
             <div style="background:white; padding:10px; margin-bottom:5px; border-radius:5px; border:1px solid #ddd;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-weight:bold;">${item.type === 'color' ? '🎨' : 'ID:' + item.id} ${item.eq}</div>
-                    <span class="group-badge" style="background-color:#dbeafe; color:#1e40af; font-size:0.7em; padding:2px 5px; border-radius:4px;">${badgeText}</span>
+                    <div style="font-weight:bold;">${item.type === 'color' ? '🎨' : (item.type === 'organic' ? '🌿' : 'ID:' + item.id)} <span style="font-family:serif;">${item.eq}</span></div>
+                    <span class="group-badge" style="background-color:#dbeafe; color:#1e40af; font-size:0.7em; padding:2px 5px; border-radius:4px; white-space:nowrap; margin-left:10px;">${badgeText}</span>
                 </div>
-                <div style="font-size:0.9em; color:#444; margin-top:5px;">${item.type === 'color' ? item.name + ' (' + getColoredText(item.color, item.color) + ')' : item.desc}</div>
+                <div style="font-size:0.9em; color:#444; margin-top:5px;">${item.type === 'color' ? item.name + ' (' + getColoredText(item.color, item.color) + ')<br><span style="font-size:0.8em;color:#888;">' + item.desc + '</span>' : (item.type === 'organic' ? item.name : item.desc)}</div>
             </div>
             `;
         }).join('');

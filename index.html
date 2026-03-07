@@ -128,61 +128,43 @@
         
         .build-display { min-height: 50px; background-color: #fff; border: 2px solid #2563eb; border-radius: 8px; padding: 10px; font-size: 1.2em; margin-bottom: 10px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 5px; font-family: serif; }
         
-        /* 絶対崩れないテーブル構造式用CSS */
-        .struct-wrapper {
-            background-color: #f8fafc;
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            padding: 15px 5px;
-            display: inline-block;
+        /* 絶対崩れない構造式アスキーアート用CSS */
+        .struct-display { 
+            font-family: "Courier New", Consolas, Monaco, monospace; 
+            white-space: pre; 
+            background-color: #f8fafc; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border: 2px dashed #cbd5e1; 
+            overflow-x: auto; 
+            font-size: 1.2em; 
+            line-height: 1.1; /* 行間を詰めて結合線を綺麗に見せる */
+            text-align: left; 
+            display: inline-block; 
             margin: 0 auto;
-            overflow-x: auto;
-            max-width: 100%;
         }
-        .struct-table {
-            border-collapse: collapse;
-            margin: 0 auto;
-            font-family: "Courier New", Consolas, Monaco, monospace;
-            line-height: 1;
-        }
-        .struct-table td {
-            text-align: center;
-            vertical-align: middle;
-            padding: 0;
-            width: 1.2em;
-            height: 1.2em;
-            font-size: 1.3em;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-        /* 文字入力枠 */
+        /* 入力フォームの代わりに文字幅に完全フィットするspanを使用 */
         .org-box { 
-            display: inline-flex; 
-            justify-content: center;
-            align-items: center;
-            min-width: 2ch; 
-            height: 100%; 
+            display: inline-block; 
+            height: 1.1em; 
+            line-height: 1.1em; 
+            text-align: center; 
             border: none; 
             border-bottom: 2px solid #d1d5db; 
             cursor: pointer; 
             background-color: transparent; 
-            padding: 0 0.2em; 
+            padding: 0; 
             margin: 0;
             font-family: "Helvetica Neue", Arial, sans-serif;
             font-weight: bold; 
             color: var(--primary);
-            box-sizing: content-box;
+            vertical-align: baseline;
+            box-sizing: border-box; /* 余白による幅のズレを完全に防ぐ */
         }
         .org-box.active-input { 
             background-color: #eff6ff; 
             border-bottom: 2px solid var(--primary);
         }
-        .struct-ans-text {
-            color: var(--primary);
-            font-weight: bold;
-            font-family: "Helvetica Neue", Arial, sans-serif;
-        }
-        
         /* 分子式・名称入力用の大きめの枠 */
         .org-box-large {
             display: inline-block; 
@@ -249,6 +231,12 @@
                     <option value="formula-to-name">分子式(示性式) → 名称</option>
                 </select>
             </div>
+            
+            <div class="input-group" style="justify-content:flex-start; gap:10px; margin-top:5px;">
+                <input type="checkbox" id="organic-show-general" checked style="cursor:pointer;">
+                <label for="organic-show-general" style="font-size:0.9em; color:#4b5563; cursor:pointer;">一般式（CₙH₂ₙ₊₂など）を表示する</label>
+            </div>
+
             <div class="input-group" style="justify-content:flex-start; gap:10px;">
                 <input type="checkbox" id="organic-condensed" style="cursor:pointer;">
                 <label for="organic-condensed" style="font-size:0.9em; color:#4b5563; cursor:pointer;">原子団（CH₃等）をまとめて表示する</label>
@@ -389,6 +377,25 @@
         "淡赤": "#FFC6DD", "青白": "#9FEBE7", "赤褐": "#8B4513", "黒": "#000000",
         "赤": "#FF0000", "紫": "#800080", "青緑": "#008B8B", "橙赤": "#FF4500", "紅": "#DC143C", "黄緑": "#9ACD32"
     };
+
+    // 一般式の定義
+    const generalFormulaMap = {
+        "有機化学(アルカン)": "CₙH₂ₙ₊₂",
+        "有機化学(シクロアルカン)": "CₙH₂ₙ",
+        "有機化学(アルケン)": "CₙH₂ₙ",
+        "有機化学(アルキン)": "CₙH₂ₙ₋₂",
+        "有機化学(アルキル基)": "CₙH₂ₙ₊₁-"
+    };
+
+    function getGeneralFormulaHtml(group) {
+        const cb = document.getElementById('organic-show-general');
+        if (cb && !cb.checked) return "";
+        const gf = generalFormulaMap[group];
+        if (gf) {
+            return `<div style="font-size:0.85em; color:#6366f1; margin-top:5px; font-weight:bold;">一般式: <span style="font-family:serif;">${gf}</span></div>`;
+        }
+        return "";
+    }
 
     const rawData = [
         // 典型元素(2学期)
@@ -535,7 +542,7 @@
         {id:"c40", eq:"Sr", name:"ストロンチウム", color:"紅", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
         {id:"c41", eq:"Ba", name:"バリウム", color:"黄緑", desc:"炎色反応", group:"色当て(炎色反応)", type:"color"},
 
-        // 新生・有機化学データ（絶対崩れない2次元配列テーブル設計）
+        // 新生・有機化学データ（絶対に崩れない独自アスキーアート構造式）
         {id: "o1", eq: "モノ", name: "数詞: 1", group: "有機化学(数詞)", type: "organic", nameParts:["モノ"]},
         {id: "o2", eq: "ジ", name: "数詞: 2", group: "有機化学(数詞)", type: "organic", nameParts:["ジ"]},
         {id: "o3", eq: "トリ", name: "数詞: 3", group: "有機化学(数詞)", type: "organic", nameParts:["トリ"]},
@@ -550,232 +557,188 @@
         // 官能基
         {id: "o11", group: "有機化学(官能基)", type: "organic", name: "ヒドロキシ基", nameParts: ["ヒドロキシ基"],
          formula_c: "-OH", formula_f: "-OH",
-         layout_c: [["-", "[0]"]], ans_c: ["OH"],
-         layout_f: [["-", "[0]", "-", "[1]"]], ans_f: ["O", "H"]},
+         struct_c: "-[OH]",
+         struct_f: "-[O]-[H]", ans_c: ["OH"], ans_f: ["O", "H"]},
          
         {id: "o12", group: "有機化学(官能基)", type: "organic", name: "ホルミル基", nameParts: ["ホルミル基"],
          formula_c: "-CHO", formula_f: "-CHO",
-         layout_c: [["", "O", ""], ["", "||", ""], ["-", "[0]", ""]], ans_c: ["CH"],
-         layout_f: [["", "O", "", ""], ["", "||", "", ""], ["-", "[0]", "-", "[1]"]], ans_f: ["C", "H"]},
+         struct_c: "  O\n  ||\n-[CH]", 
+         struct_f: "  O\n  ||\n-[C]-[H]", ans_c: ["CH"], ans_f: ["C", "H"]},
          
         {id: "o13", group: "有機化学(官能基)", type: "organic", name: "カルボニル基", nameParts: ["カルボニル基"],
          formula_c: "-CO-", formula_f: "-CO-",
-         layout_c: [["", "O", ""], ["", "||", ""], ["-", "[0]", "-"]], ans_c: ["C"],
-         layout_f: [["", "O", ""], ["", "||", ""], ["-", "[0]", "-"]], ans_f: ["C"]},
+         struct_c: "  O\n  ||\n-[C]-", 
+         struct_f: "  O\n  ||\n-[C]-", ans_c: ["C"], ans_f: ["C"]},
          
         {id: "o14", group: "有機化学(官能基)", type: "organic", name: "カルボキシ基", nameParts: ["カルボキシ基"],
          formula_c: "-COOH", formula_f: "-COOH",
-         layout_c: [["", "O", "", ""], ["", "||", "", ""], ["-", "[0]", "-", "[1]"]], ans_c: ["C", "OH"],
-         layout_f: [["", "O", "", "", "", ""], ["", "||", "", "", "", ""], ["-", "[0]", "-", "[1]", "-", "[2]"]], ans_f: ["C", "O", "H"]},
+         struct_c: "  O\n  ||\n-[C]-[OH]", 
+         struct_f: "  O\n  ||\n-[C]-[O]-[H]", ans_c: ["C", "OH"], ans_f: ["C", "O", "H"]},
          
         {id: "o15", group: "有機化学(官能基)", type: "organic", name: "アミノ基", nameParts: ["アミノ基"],
          formula_c: "-NH₂", formula_f: "-NH₂",
-         layout_c: [["-", "[0]"]], ans_c: ["NH₂"],
-         layout_f: [["", "[0]", ""], ["", "|", ""], ["-", "[1]", "-", "[2]"]], ans_f: ["H", "N", "H"]},
+         struct_c: "-[NH₂]", 
+         struct_f: " [H]\n  |\n-[N]-[H]", ans_c: ["NH₂"], ans_f: ["H", "N", "H"]},
          
         {id: "o16", group: "有機化学(官能基)", type: "organic", name: "ニトロ基", nameParts: ["ニトロ基"],
          formula_c: "-NO₂", formula_f: "-NO₂",
-         layout_c: [["-", "[0]"]], ans_c: ["NO₂"],
-         layout_f: [["-", "[0]"]], ans_f: ["NO₂"]},
+         struct_c: "-[NO₂]", 
+         struct_f: "-[NO₂]", ans_c: ["NO₂"], ans_f: ["NO₂"]},
          
         {id: "o17", group: "有機化学(官能基)", type: "organic", name: "スルホ基", nameParts: ["スルホ基"],
          formula_c: "-SO₃H", formula_f: "-SO₃H",
-         layout_c: [["-", "[0]"]], ans_c: ["SO₃H"],
-         layout_f: [["-", "[0]"]], ans_f: ["SO₃H"]},
+         struct_c: "-[SO₃H]", 
+         struct_f: "-[SO₃H]", ans_c: ["SO₃H"], ans_f: ["SO₃H"]},
          
         {id: "o18", group: "有機化学(官能基)", type: "organic", name: "エーテル結合", nameParts: ["エーテル結合"],
          formula_c: "-O-", formula_f: "-O-",
-         layout_c: [["-", "[0]", "-"]], ans_c: ["O"],
-         layout_f: [["-", "[0]", "-"]], ans_f: ["O"]},
+         struct_c: "-[O]-", 
+         struct_f: "-[O]-", ans_c: ["O"], ans_f: ["O"]},
          
         {id: "o19", group: "有機化学(官能基)", type: "organic", name: "エステル結合", nameParts: ["エステル結合"],
          formula_c: "-COO-", formula_f: "-COO-",
-         layout_c: [["", "O", "", "", ""], ["", "||", "", "", ""], ["-", "[0]", "-", "[1]", "-"]], ans_c: ["C", "O"],
-         layout_f: [["", "O", "", "", ""], ["", "||", "", "", ""], ["-", "[0]", "-", "[1]", "-"]], ans_f: ["C", "O"]},
+         struct_c: "  O\n  ||\n-[C]-[O]-", 
+         struct_f: "  O\n  ||\n-[C]-[O]-", ans_c: ["C", "O"], ans_f: ["C", "O"]},
          
         {id: "o20", group: "有機化学(官能基)", type: "organic", name: "アミド結合", nameParts: ["アミド結合"],
          formula_c: "-CONH-", formula_f: "-CONH-",
-         layout_c: [["", "O", "", "", ""], ["", "||", "", "", ""], ["-", "[0]", "-", "[1]", "-"]], ans_c: ["C", "NH"],
-         layout_f: [["", "O", "", "", "", ""], ["", "||", "", "", "", ""], ["-", "[0]", "-", "[1]", "-", "[2]", ""]], ans_f: ["C", "N", "H"]},
+         struct_c: "  O\n  ||\n-[C]-[NH]-", 
+         struct_f: "  O\n  ||\n-[C]-[N]-\n     |\n    [H]", ans_c: ["C", "NH"], ans_f: ["C", "N", "H"]},
+
+        // アルキル基
+        {id: "o43", group: "有機化学(アルキル基)", type: "organic", name: "メチル基", nameParts: ["メチル基"],
+         formula_c: "-CH₃", formula_f: "-CH₃",
+         struct_c: "-[CH₃]", 
+         struct_f: "  [H]\n  |\n-[C]-[H]\n  |\n  [H]", ans_c: ["CH₃"], ans_f: ["H", "C", "H", "H"]},
+         
+        {id: "o44", group: "有機化学(アルキル基)", type: "organic", name: "エチル基", nameParts: ["エチル基"],
+         formula_c: "-CH₂CH₃", formula_f: "-C₂H₅",
+         struct_c: "-[CH₂]-[CH₃]", 
+         struct_f: "  [H] [H]\n  |   |\n-[C]-[C]-[H]\n  |   |\n  [H] [H]", ans_c: ["CH₂", "CH₃"], ans_f: ["H", "H", "C", "C", "H", "H", "H"]},
+         
+        {id: "o45", group: "有機化学(アルキル基)", type: "organic", name: "プロピル基", nameParts: ["プロピル基"],
+         formula_c: "-CH₂CH₂CH₃", formula_f: "-C₃H₇",
+         struct_c: "-[CH₂]-[CH₂]-[CH₃]", 
+         struct_f: "  [H] [H] [H]\n  |   |   |\n-[C]-[C]-[C]-[H]\n  |   |   |\n  [H] [H] [H]", ans_c: ["CH₂", "CH₂", "CH₃"], ans_f: ["H", "H", "H", "C", "C", "C", "H", "H", "H", "H"]},
+         
+        {id: "o46", group: "有機化学(アルキル基)", type: "organic", name: "イソプロピル基", nameParts: ["イソプロピル基"],
+         formula_c: "-CH(CH₃)₂", formula_f: "-C₃H₇",
+         struct_c: "  [CH₃]\n  |\n-[CH]-[CH₃]", 
+         struct_f: "  [CH₃]\n  |\n-[CH]-[CH₃]", ans_c: ["CH₃", "CH", "CH₃"], ans_f: ["CH₃", "CH", "CH₃"]},
 
         // アルカン
         {id: "o21", group: "有機化学(アルカン)", type: "organic", name: "メタン", nameParts: ["メタン"],
          formula_c: "CH₄", formula_f: "CH₄",
-         layout_c: [["[0]"]], ans_c: ["CH₄"],
-         layout_f: [["", "[0]", ""], ["", "|", ""], ["[1]", "-", "[2]", "-", "[3]"], ["", "|", ""], ["", "[4]", ""]], ans_f: ["H", "H", "C", "H", "H"]},
+         struct_c: "[CH₄]", 
+         struct_f: "    [H]\n     |\n[H]-[C]-[H]\n     |\n    [H]", ans_c: ["CH₄"], ans_f: ["H", "H", "C", "H", "H"]},
          
         {id: "o22", group: "有機化学(アルカン)", type: "organic", name: "エタン", nameParts: ["エタン"],
          formula_c: "CH₃CH₃", formula_f: "C₂H₆",
-         layout_c: [["[0]", "-", "[1]"]], ans_c: ["CH₃", "CH₃"],
-         layout_f: [["", "[0]", "", "[1]", ""], ["", "|", "", "|", ""], ["[2]", "-", "[3]", "-", "[4]", "-", "[5]"], ["", "|", "", "|", ""], ["", "[6]", "", "[7]", ""]], ans_f: ["H", "H", "H", "C", "C", "H", "H", "H"]},
+         struct_c: "[CH₃]-[CH₃]", 
+         struct_f: "    [H] [H]\n     |   |\n[H]-[C]-[C]-[H]\n     |   |\n    [H] [H]", ans_c: ["CH₃", "CH₃"], ans_f: ["H", "H", "H", "C", "C", "H", "H", "H"]},
          
         {id: "o23", group: "有機化学(アルカン)", type: "organic", name: "プロパン", nameParts: ["プロパン"],
          formula_c: "CH₃CH₂CH₃", formula_f: "C₃H₈",
-         layout_c: [["[0]", "-", "[1]", "-", "[2]"]], ans_c: ["CH₃", "CH₂", "CH₃"],
-         layout_f: [["", "[0]", "", "[1]", "", "[2]", ""], ["", "|", "", "|", "", "|", ""], ["[3]", "-", "[4]", "-", "[5]", "-", "[6]", "-", "[7]"], ["", "|", "", "|", "", "|", ""], ["", "[8]", "", "[9]", "", "[10]", ""]], ans_f: ["H", "H", "H", "H", "C", "C", "C", "H", "H", "H", "H"]},
+         struct_c: "[CH₃]-[CH₂]-[CH₃]", 
+         struct_f: "    [H] [H] [H]\n     |   |   |\n[H]-[C]-[C]-[C]-[H]\n     |   |   |\n    [H] [H] [H]", ans_c: ["CH₃", "CH₂", "CH₃"], ans_f: ["H", "H", "H", "H", "C", "C", "C", "H", "H", "H", "H"]},
          
         {id: "o24", group: "有機化学(アルカン)", type: "organic", name: "ブタン", nameParts: ["ブタン"],
          formula_c: "CH₃CH₂CH₂CH₃", formula_f: "C₄H₁₀",
-         layout_c: [["[0]", "-", "[1]", "-", "[2]", "-", "[3]"]], ans_c: ["CH₃", "CH₂", "CH₂", "CH₃"],
-         layout_f: [["", "[0]", "", "[1]", "", "[2]", "", "[3]", ""], ["", "|", "", "|", "", "|", "", "|", ""], ["[4]", "-", "[5]", "-", "[6]", "-", "[7]", "-", "[8]", "-", "[9]"], ["", "|", "", "|", "", "|", "", "|", ""], ["", "[10]", "", "[11]", "", "[12]", "", "[13]", ""]], ans_f: ["H","H","H","H","H","C","C","C","C","H","H","H","H","H"]},
+         struct_c: "[CH₃]-[CH₂]-[CH₂]-[CH₃]", 
+         struct_f: "    [H] [H] [H] [H]\n     |   |   |   |\n[H]-[C]-[C]-[C]-[C]-[H]\n     |   |   |   |\n    [H] [H] [H] [H]", ans_c: ["CH₃", "CH₂", "CH₂", "CH₃"], ans_f: ["H", "H", "H", "H", "H", "C", "C", "C", "C", "H", "H", "H", "H", "H"]},
          
         {id: "o25", group: "有機化学(アルカン)", type: "organic", name: "2-メチルプロパン", nameParts: ["2", "-", "メチル", "プロパン"],
          formula_c: "CH₃CH(CH₃)CH₃", formula_f: "C₄H₁₀",
-         layout_c: [["", "", "[0]", "", ""], ["", "", "|", "", ""], ["[1]", "-", "[2]", "-", "[3]"]], ans_c: ["CH₃", "CH₃", "CH", "CH₃"],
-         layout_f: [
-             ["", "", "", "", "[0]", "", "", "", ""], 
-             ["", "", "", "", "|", "", "", "", ""], 
-             ["", "", "[1]", "-", "[2]", "-", "[3]", "", ""], 
-             ["", "", "", "", "|", "", "", "", ""], 
-             ["", "[4]", "", "", "", "", "", "[5]", ""], 
-             ["", "|", "", "", "|", "", "", "|", ""], 
-             ["[6]", "-", "[7]", "-", "[8]", "-", "[9]", "-", "[10]"], 
-             ["", "|", "", "", "|", "", "", "|", ""], 
-             ["", "[11]", "", "", "[12]", "", "", "[13]", ""]
-         ], 
-         ans_f: ["H", "H", "C", "H", "H", "H", "H", "C", "C", "C", "H", "H", "H", "H"]},
+         struct_c: "       [CH₃]\n       |\n[CH₃]-[CH]-[CH₃]", 
+         struct_f: "            [H]\n            |\n        [H]-[C]-[H]\n            |\n    [H]     [C]     [H]\n     |      |      |\n[H]-[C]----[C]----[C]-[H]\n     |      |      |\n    [H]    [H]    [H]", ans_c: ["CH₃", "CH₃", "CH", "CH₃"], ans_f: ["H", "H", "C", "H", "H", "C", "H", "H", "C", "C", "C", "H", "H", "H", "H"]},
          
         {id: "o26", group: "有機化学(アルカン)", type: "organic", name: "ペンタン", nameParts: ["ペンタン"],
          formula_c: "CH₃(CH₂)₃CH₃", formula_f: "C₅H₁₂",
-         layout_c: [["[0]", "-", "[1]", "-", "[2]", "-", "[3]", "-", "[4]"]], ans_c: ["CH₃", "CH₂", "CH₂", "CH₂", "CH₃"],
-         layout_f: [["", "[0]", "", "[1]", "", "[2]", "", "[3]", "", "[4]", ""], ["", "|", "", "|", "", "|", "", "|", "", "|", ""], ["[5]", "-", "[6]", "-", "[7]", "-", "[8]", "-", "[9]", "-", "[10]", "-", "[11]"], ["", "|", "", "|", "", "|", "", "|", "", "|", ""], ["", "[12]", "", "[13]", "", "[14]", "", "[15]", "", "[16]", ""]], ans_f: ["H","H","H","H","H","H","C","C","C","C","C","H","H","H","H","H","H"]},
+         struct_c: "[CH₃]-[CH₂]-[CH₂]-[CH₂]-[CH₃]", 
+         struct_f: "    [H] [H] [H] [H] [H]\n     |   |   |   |   |\n[H]-[C]-[C]-[C]-[C]-[C]-[H]\n     |   |   |   |   |\n    [H] [H] [H] [H] [H]", ans_c: ["CH₃", "CH₂", "CH₂", "CH₂", "CH₃"], ans_f: ["H", "H", "H", "H", "H", "H", "C", "C", "C", "C", "C", "H", "H", "H", "H", "H", "H"]},
          
         {id: "o27", group: "有機化学(アルカン)", type: "organic", name: "2-メチルブタン", nameParts: ["2", "-", "メチル", "ブタン"],
          formula_c: "CH₃CH(CH₃)CH₂CH₃", formula_f: "C₅H₁₂",
-         layout_c: [["", "", "[0]", "", "", "", ""], ["", "", "|", "", "", "", ""], ["[1]", "-", "[2]", "-", "[3]", "-", "[4]"]], ans_c: ["CH₃", "CH₃", "CH", "CH₂", "CH₃"],
-         layout_f: [
-             ["", "", "", "", "[0]", "", "", "", "", "", ""], 
-             ["", "", "", "", "|", "", "", "", "", "", ""], 
-             ["", "", "[1]", "-", "[2]", "-", "[3]", "", "", "", ""], 
-             ["", "", "", "", "|", "", "", "", "", "", ""], 
-             ["", "[4]", "", "", "", "", "", "[5]", "", "[6]", ""], 
-             ["", "|", "", "", "|", "", "", "|", "", "|", ""], 
-             ["[7]", "-", "[8]", "-", "[9]", "-", "[10]", "-", "[11]", "-", "[12]"], 
-             ["", "|", "", "", "|", "", "", "|", "", "|", ""], 
-             ["", "[13]", "", "", "[14]", "", "", "[15]", "", "[16]", ""]
-         ], 
-         ans_f: ["H","H","C","H","H","H","H","H","C","C","C","C","H","H","H","H","H"]},
+         struct_c: "       [CH₃]\n       |\n[CH₃]-[CH]-[CH₂]-[CH₃]", 
+         struct_f: "            [H]\n            |\n        [H]-[C]-[H]\n            |\n    [H]     [C]     [H] [H]\n     |      |      |   |\n[H]-[C]----[C]----[C]-[C]-[H]\n     |      |      |   |\n    [H]    [H]    [H] [H]", ans_c: ["CH₃", "CH₃", "CH", "CH₂", "CH₃"], ans_f: ["H", "H", "C", "H", "H", "C", "H", "H", "H", "C", "C", "C", "C", "H", "H", "H", "H", "H"]},
          
         {id: "o28", group: "有機化学(アルカン)", type: "organic", name: "2,2-ジメチルプロパン", nameParts: ["2", ",", "2", "-", "ジメチル", "プロパン"],
          formula_c: "C(CH₃)₄", formula_f: "C₅H₁₂",
-         layout_c: [["", "", "[0]", "", ""], ["", "", "|", "", ""], ["[1]", "-", "[2]", "-", "[3]"], ["", "", "|", "", ""], ["", "", "[4]", "", ""]], ans_c: ["CH₃", "CH₃", "C", "CH₃", "CH₃"],
-         layout_f: [
-             ["", "", "", "", "[0]", "", "", "", ""], 
-             ["", "", "", "", "|", "", "", "", ""], 
-             ["", "", "[1]", "-", "[2]", "-", "[3]", "", ""], 
-             ["", "", "", "", "|", "", "", "", ""], 
-             ["", "[4]", "", "", "", "", "", "[5]", ""], 
-             ["", "|", "", "", "|", "", "", "|", ""], 
-             ["[6]", "-", "[7]", "-", "[8]", "-", "[9]", "-", "[10]"], 
-             ["", "|", "", "", "|", "", "", "|", ""], 
-             ["", "[11]", "", "", "", "", "", "[12]", ""], 
-             ["", "", "", "", "|", "", "", "", ""], 
-             ["", "", "[13]", "-", "[14]", "-", "[15]", "", ""], 
-             ["", "", "", "", "|", "", "", "", ""], 
-             ["", "", "", "", "[16]", "", "", "", ""]
-         ], 
-         ans_f: ["H","H","C","H","H","H","H","C","C","C","H","H","H","H","C","H","H"]},
+         struct_c: "       [CH₃]\n       |\n[CH₃]-[C]-[CH₃]\n       |\n       [CH₃]", 
+         struct_f: "            [H]\n            |\n        [H]-[C]-[H]\n            |\n    [H]     [C]     [H]\n     |      |      |\n[H]-[C]----[C]----[C]-[H]\n     |      |      |\n    [H]    [C]    [H]\n            |\n        [H]-[C]-[H]\n            |\n           [H]", ans_c: ["CH₃", "CH₃", "C", "CH₃", "CH₃"], ans_f: ["H", "H", "C", "H", "H", "C", "H", "H", "C", "C", "C", "H", "H", "C", "H", "H", "C", "H", "H"]},
         
-        // シクロアルカン（環状構造は複雑すぎるためCH2のまま展開）
+        // シクロアルカン
         {id: "o30", group: "有機化学(シクロアルカン)", type: "organic", name: "シクロプロパン", nameParts: ["シクロ", "プロパン"],
          formula_c: "C₃H₆(環状)", formula_f: "C₃H₆(環状)",
-         layout_c: [["", "[0]", ""], ["/", "", "\\"], ["[1]", "-", "[2]"]], ans_c: ["CH₂", "CH₂", "CH₂"],
-         layout_f: [["", "[0]", ""], ["/", "", "\\"], ["[1]", "-", "[2]"]], ans_f: ["CH₂", "CH₂", "CH₂"]},
+         struct_c: "   [CH₂]\n  /   \\\n[CH₂]-[CH₂]", 
+         struct_f: "   [CH₂]\n  /   \\\n[CH₂]-[CH₂]", ans_c: ["CH₂", "CH₂", "CH₂"], ans_f: ["CH₂", "CH₂", "CH₂"]},
          
         {id: "o31", group: "有機化学(シクロアルカン)", type: "organic", name: "シクロブタン", nameParts: ["シクロ", "ブタン"],
          formula_c: "C₄H₈(環状)", formula_f: "C₄H₈(環状)",
-         layout_c: [["[0]", "-", "[1]"], ["|", "", "|"], ["[2]", "-", "[3]"]], ans_c: ["CH₂", "CH₂", "CH₂", "CH₂"],
-         layout_f: [["[0]", "-", "[1]"], ["|", "", "|"], ["[2]", "-", "[3]"]], ans_f: ["CH₂", "CH₂", "CH₂", "CH₂"]},
+         struct_c: "[CH₂]-[CH₂]\n  |     |\n[CH₂]-[CH₂]", 
+         struct_f: "[CH₂]-[CH₂]\n  |     |\n[CH₂]-[CH₂]", ans_c: ["CH₂", "CH₂", "CH₂", "CH₂"], ans_f: ["CH₂", "CH₂", "CH₂", "CH₂"]},
          
         {id: "o32", group: "有機化学(シクロアルカン)", type: "organic", name: "シクロペンタン", nameParts: ["シクロ", "ペンタン"],
          formula_c: "C₅H₁₀(環状)", formula_f: "C₅H₁₀(環状)",
-         layout_c: [["", "", "[0]", "", ""], ["", "/", "", "\\", ""], ["[1]", "", "", "", "[2]"], ["", "\\", "", "/", ""], ["", "[3]", "-", "[4]", ""]], ans_c: ["CH₂", "CH₂", "CH₂", "CH₂", "CH₂"],
-         layout_f: [["", "", "[0]", "", ""], ["", "/", "", "\\", ""], ["[1]", "", "", "", "[2]"], ["", "\\", "", "/", ""], ["", "[3]", "-", "[4]", ""]], ans_f: ["CH₂", "CH₂", "CH₂", "CH₂", "CH₂"]},
+         struct_c: "   [CH₂]\n  /     \\\n[CH₂]   [CH₂]\n  \\     /\n [CH₂]-[CH₂]", 
+         struct_f: "   [CH₂]\n  /     \\\n[CH₂]   [CH₂]\n  \\     /\n [CH₂]-[CH₂]", ans_c: ["CH₂", "CH₂", "CH₂", "CH₂", "CH₂"], ans_f: ["CH₂", "CH₂", "CH₂", "CH₂", "CH₂"]},
          
         {id: "o33", group: "有機化学(シクロアルカン)", type: "organic", name: "シクロヘキサン", nameParts: ["シクロ", "ヘキサン"],
          formula_c: "C₆H₁₂(環状)", formula_f: "C₆H₁₂(環状)",
-         layout_c: [["", "[0]", "-", "[1]", ""], ["/", "", "", "", "\\"], ["[2]", "", "", "", "[3]"], ["\\", "", "", "", "/"], ["", "[4]", "-", "[5]", ""]], ans_c: ["CH₂", "CH₂", "CH₂", "CH₂", "CH₂", "CH₂"],
-         layout_f: [["", "[0]", "-", "[1]", ""], ["/", "", "", "", "\\"], ["[2]", "", "", "", "[3]"], ["\\", "", "", "", "/"], ["", "[4]", "-", "[5]", ""]], ans_f: ["CH₂", "CH₂", "CH₂", "CH₂", "CH₂", "CH₂"]},
+         struct_c: "  [CH₂]-[CH₂]\n /         \\\n[CH₂]       [CH₂]\n \\         /\n  [CH₂]-[CH₂]", 
+         struct_f: "  [CH₂]-[CH₂]\n /         \\\n[CH₂]       [CH₂]\n \\         /\n  [CH₂]-[CH₂]", ans_c: ["CH₂", "CH₂", "CH₂", "CH₂", "CH₂", "CH₂"], ans_f: ["CH₂", "CH₂", "CH₂", "CH₂", "CH₂", "CH₂"]},
 
         // アルケン
         {id: "o34", group: "有機化学(アルケン)", type: "organic", name: "エチレン", nameParts: ["エチレン"],
          formula_c: "CH₂=CH₂", formula_f: "C₂H₄",
-         layout_c: [["[0]", "=", "[1]"]], ans_c: ["CH₂", "CH₂"],
-         layout_f: [["", "[0]", "", "[1]", ""], ["", "|", "", "|", ""], ["", "[2]", "=", "[3]", ""], ["", "|", "", "|", ""], ["", "[4]", "", "[5]", ""]], ans_f: ["H", "H", "C", "C", "H", "H"]},
+         struct_c: "[CH₂]=[CH₂]", 
+         struct_f: "    [H] [H]\n     |   |\n    [C]=[C]\n     |   |\n    [H] [H]", ans_c: ["CH₂", "CH₂"], ans_f: ["H", "H", "C", "C", "H", "H"]},
          
         {id: "o35", group: "有機化学(アルケン)", type: "organic", name: "プロペン", nameParts: ["プロペン"],
          formula_c: "CH₂=CHCH₃", formula_f: "C₃H₆",
-         layout_c: [["[0]", "=", "[1]", "-", "[2]"]], ans_c: ["CH₂", "CH", "CH₃"],
-         layout_f: [["", "[0]", "", "[1]", "", "[2]", ""], ["", "|", "", "|", "", "|", ""], ["", "[3]", "=", "[4]", "-", "[5]", "-", "[6]"], ["", "|", "", "", "", "|", ""], ["", "[7]", "", "", "", "[8]", ""]], ans_f: ["H", "H", "H", "C", "C", "C", "H", "H", "H"]},
+         struct_c: "[CH₂]=[CH]-[CH₃]", 
+         struct_f: "    [H] [H] [H]\n     |   |   |\n    [C]=[C]-[C]-[H]\n     |       |\n    [H]     [H]", ans_c: ["CH₂", "CH", "CH₃"], ans_f: ["H", "H", "H", "C", "C", "C", "H", "H", "H"]},
          
         {id: "o36", group: "有機化学(アルケン)", type: "organic", name: "1-ブテン", nameParts: ["1", "-", "ブテン"],
          formula_c: "CH₂=CHCH₂CH₃", formula_f: "C₄H₈",
-         layout_c: [["[0]", "=", "[1]", "-", "[2]", "-", "[3]"]], ans_c: ["CH₂", "CH", "CH₂", "CH₃"],
-         layout_f: [
-             ["", "[0]", "", "[1]", "", "[2]", "", "[3]", ""], 
-             ["", "|", "", "|", "", "|", "", "|", ""], 
-             ["", "[4]", "=", "[5]", "-", "[6]", "-", "[7]", "-", "[8]"], 
-             ["", "|", "", "", "", "|", "", "|", ""], 
-             ["", "[9]", "", "", "", "[10]", "", "[11]", ""]
-         ], 
-         ans_f: ["H", "H", "H", "H", "C", "C", "C", "C", "H", "H", "H", "H"]},
+         struct_c: "[CH₂]=[CH]-[CH₂]-[CH₃]", 
+         struct_f: "    [H] [H] [H] [H]\n     |   |   |   |\n    [C]=[C]-[C]-[C]-[H]\n     |       |   |\n    [H]     [H] [H]", ans_c: ["CH₂", "CH", "CH₂", "CH₃"], ans_f: ["H", "H", "H", "H", "C", "C", "C", "C", "H", "H", "H", "H"]},
          
         {id: "o37_c", group: "有機化学(アルケン)", type: "organic", name: "シス-2-ブテン", nameParts: ["シス", "-", "2", "-", "ブテン"],
          formula_c: "CH₃CH=CHCH₃(シス)", formula_f: "C₄H₈(シス)",
-         layout_c: [["[0]", "", "", "", "[1]"], ["", "\\", "", "/", ""], ["", "", "C=C", "", ""], ["", "/", "", "\\", ""], ["[2]", "", "", "", "[3]"]], ans_c: ["CH₃", "CH₃", "H", "H"],
-         layout_f: [["[0]", "", "", "", "[1]"], ["", "\\", "", "/", ""], ["", "", "C=C", "", ""], ["", "/", "", "\\", ""], ["[2]", "", "", "", "[3]"]], ans_f: ["CH₃", "CH₃", "H", "H"]},
+         struct_c: " [CH₃]   [CH₃]\n    \\     /\n     C = C\n    /     \\\n  [H]     [H]", 
+         struct_f: " [CH₃]   [CH₃]\n    \\     /\n     C = C\n    /     \\\n  [H]     [H]", ans_c: ["CH₃", "CH₃", "H", "H"], ans_f: ["CH₃", "CH₃", "H", "H"]},
          
         {id: "o37_t", group: "有機化学(アルケン)", type: "organic", name: "トランス-2-ブテン", nameParts: ["トランス", "-", "2", "-", "ブテン"],
          formula_c: "CH₃CH=CHCH₃(トランス)", formula_f: "C₄H₈(トランス)",
-         layout_c: [["[0]", "", "", "", "[1]"], ["", "\\", "", "/", ""], ["", "", "C=C", "", ""], ["", "/", "", "\\", ""], ["[2]", "", "", "", "[3]"]], ans_c: ["CH₃", "H", "H", "CH₃"],
-         layout_f: [["[0]", "", "", "", "[1]"], ["", "\\", "", "/", ""], ["", "", "C=C", "", ""], ["", "/", "", "\\", ""], ["[2]", "", "", "", "[3]"]], ans_f: ["CH₃", "H", "H", "CH₃"]},
+         struct_c: " [CH₃]   [H]\n    \\     /\n     C = C\n    /     \\\n  [H]     [CH₃]", 
+         struct_f: " [CH₃]   [H]\n    \\     /\n     C = C\n    /     \\\n  [H]     [CH₃]", ans_c: ["CH₃", "H", "H", "CH₃"], ans_f: ["CH₃", "H", "H", "CH₃"]},
          
         {id: "o38", group: "有機化学(アルケン)", type: "organic", name: "2-メチルプロペン", nameParts: ["2", "-", "メチル", "プロペン"],
          formula_c: "CH₂=C(CH₃)₂", formula_f: "C₄H₈",
-         layout_c: [["", "", "", "[0]"], ["", "", "", "|"], ["[1]", "=", "[2]", "-", "[3]"]], ans_c: ["CH₃", "CH₂", "C", "CH₃"],
-         layout_f: [["", "", "", "[0]"], ["", "", "", "|"], ["[1]", "=", "[2]", "-", "[3]"]], ans_f: ["CH₃", "CH₂", "C", "CH₃"]},
+         struct_c: "        [CH₃]\n        |\n  [CH₂]=[C]-[CH₃]", 
+         struct_f: "        [CH₃]\n        |\n  [CH₂]=[C]-[CH₃]", ans_c: ["CH₃", "CH₂", "C", "CH₃"], ans_f: ["CH₃", "CH₂", "C", "CH₃"]},
 
         // アルキン
         {id: "o39", group: "有機化学(アルキン)", type: "organic", name: "アセチレン", nameParts: ["アセチレン"],
          formula_c: "CH≡CH", formula_f: "C₂H₂",
-         layout_c: [["[0]", "≡", "[1]"]], ans_c: ["CH", "CH"],
-         layout_f: [["[0]", "-", "[1]", "≡", "[2]", "-", "[3]"]], ans_f: ["H", "C", "C", "H"]},
+         struct_c: "[CH]≡[CH]", 
+         struct_f: " [H]-[C]≡[C]-[H]", ans_c: ["CH", "CH"], ans_f: ["H", "C", "C", "H"]},
          
         {id: "o40", group: "有機化学(アルキン)", type: "organic", name: "プロピン", nameParts: ["プロピン"],
          formula_c: "CH≡CCH₃", formula_f: "C₃H₄",
-         layout_c: [["[0]", "≡", "[1]", "-", "[2]"]], ans_c: ["CH", "C", "CH₃"],
-         layout_f: [
-             ["", "", "", "", "", "[0]", ""], 
-             ["", "", "", "", "", "|", ""], 
-             ["[1]", "-", "[2]", "≡", "[3]", "-", "[4]", "-", "[5]"], 
-             ["", "", "", "", "", "|", ""], 
-             ["", "", "", "", "", "[6]", ""]
-         ], 
-         ans_f: ["H", "H", "C", "C", "C", "H", "H"]},
+         struct_c: "[CH]≡[C]-[CH₃]", 
+         struct_f: "             [H]\n             |\n [H]-[C]≡[C]-[C]-[H]\n             |\n             [H]", ans_c: ["CH", "C", "CH₃"], ans_f: ["H", "H", "C", "C", "C", "H", "H"]},
          
         {id: "o41", group: "有機化学(アルキン)", type: "organic", name: "1-ブチン", nameParts: ["1", "-", "ブチン"],
          formula_c: "CH≡CCH₂CH₃", formula_f: "C₄H₆",
-         layout_c: [["[0]", "≡", "[1]", "-", "[2]", "-", "[3]"]], ans_c: ["CH", "C", "CH₂", "CH₃"],
-         layout_f: [
-             ["", "", "", "", "", "[0]", "", "[1]", ""], 
-             ["", "", "", "", "", "|", "", "|", ""], 
-             ["[2]", "-", "[3]", "≡", "[4]", "-", "[5]", "-", "[6]", "-", "[7]"], 
-             ["", "", "", "", "", "|", "", "|", ""], 
-             ["", "", "", "", "", "[8]", "", "[9]", ""]
-         ], 
-         ans_f: ["H", "H", "H", "C", "C", "C", "C", "H", "H", "H"]},
+         struct_c: "[CH]≡[C]-[CH₂]-[CH₃]", 
+         struct_f: "[CH]≡[C]-[CH₂]-[CH₃]", ans_c: ["CH", "C", "CH₂", "CH₃"], ans_f: ["CH", "C", "CH₂", "CH₃"]},
          
         {id: "o42", group: "有機化学(アルキン)", type: "organic", name: "2-ブチン", nameParts: ["2", "-", "ブチン"],
          formula_c: "CH₃C≡CCH₃", formula_f: "C₄H₆",
-         layout_c: [["[0]", "-", "[1]", "≡", "[2]", "-", "[3]"]], ans_c: ["CH₃", "C", "C", "CH₃"],
-         layout_f: [
-             ["", "[0]", "", "", "", "", "", "[1]", ""], 
-             ["", "|", "", "", "", "", "", "|", ""], 
-             ["[2]", "-", "[3]", "-", "[4]", "≡", "[5]", "-", "[6]", "-", "[7]"], 
-             ["", "|", "", "", "", "", "", "|", ""], 
-             ["", "[8]", "", "", "", "", "", "[9]", ""]
-         ], 
-         ans_f: ["H", "H", "H", "C", "C", "C", "C", "H", "H", "H"]}
+         struct_c: "[CH₃]-[C]≡[C]-[CH₃]", 
+         struct_f: "[CH₃]-[C]≡[C]-[CH₃]", ans_c: ["CH₃", "C", "C", "CH₃"], ans_f: ["CH₃", "C", "C", "CH₃"]}
     ];
 
     let currentMode, quizList, currentIndex, score, colorDir, organicDir, wrongQuestions = [], activeColorGroups = [], activeOrganicGroups = [];
@@ -843,7 +806,7 @@
             activeOrganicGroups = Array.from(document.querySelectorAll('input[name="organic-group-select"]:checked')).map(cb => cb.value);
             list = rawData.filter(d => d.type === "organic" && activeOrganicGroups.includes(d.group));
             
-            // ★構造に関する出題時は数詞を除外
+            // 構造に関する出題時は数詞を除外
             if (organicDir.includes("struct") || organicDir === "name-to-formula") {
                 list = list.filter(d => d.group !== "有機化学(数詞)");
             }
@@ -901,32 +864,31 @@
         }
     }
 
-    // ★絶対崩れない構造式テーブル描画関数
-    function renderStructTable(layoutArray, renderMode = "input", answersArray = []) {
-        if(!layoutArray) return "";
-        let html = '<div class="struct-wrapper"><table class="struct-table">';
-        layoutArray.forEach(row => {
-            html += '<tr>';
-            row.forEach(cell => {
-                if (!cell || cell === "") {
-                    html += '<td></td>';
-                } else if (cell.match(/\[(\d+)\]/)) {
-                    let idx = RegExp.$1;
-                    if (renderMode === "input") {
-                        // 文字幅に合わせて枠の大きさを可変にする
-                        let chWidth = answersArray[idx] ? (answersArray[idx].length > 2 ? answersArray[idx].length : 2) : 2;
-                        html += `<td><div class="org-box" data-idx="${idx}" style="min-width:${chWidth}ch;"></div></td>`;
-                    } else if (renderMode === "answer") {
-                        html += `<td><span class="struct-ans-text">${answersArray[idx]}</span></td>`;
-                    }
-                } else {
-                    html += `<td>${cell}</td>`;
-                }
-            });
-            html += '</tr>';
+    // ★絶対崩れない構造式（アスキーアート完全対応版）描画関数
+    // `[CH₃]` などの部分を `<span style="width:Xch;">...</span>` に置換し、余白を完全に排除する
+    function renderStructAscii(structStr, renderMode = "input") {
+        if (!structStr) return "";
+        let html = structStr;
+        let idx = 0;
+        let ansArray = []; 
+
+        html = html.replace(/\[(.*?)\]/g, (match, p1) => {
+            let ansText = p1;
+            if (renderMode === "input") {
+                ansArray.push(ansText);
+            }
+            let content = renderMode === "answer" ? ansText : "";
+            // match.length = 元の "[xxx]" の文字数（カッコを含む）。これで文字幅を固定しズレを排除する
+            let w = match.length; 
+            let span = `<span class="org-box" data-idx="${idx}" style="width:${w}ch;">${content}</span>`;
+            idx++;
+            return span;
         });
-        html += '</table></div>';
-        return html;
+
+        if (renderMode === "input") {
+            organicAnswers = ansArray;
+        }
+        return `<div class="struct-display">${html}</div>`;
     }
 
     // 分子式をパーツに分割する
@@ -937,11 +899,10 @@
     // --- 有機構造式・名称の組み立て（モード9） ---
     function setupMode9(q) {
         const isCond = document.getElementById('organic-condensed').checked;
-        const layout = isCond ? q.layout_c : (q.layout_f || q.layout_c);
-        const ansArr = isCond ? q.ans_c : (q.ans_f || q.ans_c);
+        const structStr = isCond ? q.struct_c : (q.struct_f || q.struct_c);
         const formulaStr = isCond ? q.formula_c : q.formula_f;
 
-        if (!layout || !ansArr) { nextQuestion(); return; }
+        if (!structStr && organicDir.includes("struct")) { nextQuestion(); return; }
 
         const qHeader = document.getElementById('question-header');
         qHeader.classList.remove('hidden');
@@ -952,18 +913,17 @@
         organicAnswers = [];
         
         if (organicDir === "name-to-struct") {
-            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em; font-weight:bold;">${q.name}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>`;
-            ansArr.forEach((ans) => { organicAnswers.push(ans); });
-            document.getElementById('organic-build-display').innerHTML = renderStructTable(layout, "input", ansArr);
+            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em; font-weight:bold;">${q.name}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>${getGeneralFormulaHtml(q.group)}`;
+            document.getElementById('organic-build-display').innerHTML = renderStructAscii(structStr, "input");
             
-            let pool = [...new Set(ansArr)];
-            let dummies = isCond ? ["CH₃", "CH₂", "CH", "C", "H", "OH", "O", "NH₂", "COOH", "CHO"] : ["C", "H", "O", "N", "CH₃"];
+            let pool = [...new Set(organicAnswers)];
+            let dummies = isCond ? ["CH₃", "CH₂", "CH", "C", "H", "OH", "O", "NH₂", "COOH"] : ["C", "H", "O", "N", "CH₃"];
             dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
             pool = shuffleArray(pool).slice(0, 10);
             renderOrgKeys(pool, false);
             
         } else if (organicDir === "name-to-formula") {
-            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em; font-weight:bold;">${q.name}</div><div style="font-size:0.8em; color:#666;">の分子式（または示性式）は？</div>`;
+            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em; font-weight:bold;">${q.name}</div><div style="font-size:0.8em; color:#666;">の分子式（または示性式）は？</div>${getGeneralFormulaHtml(q.group)}`;
             let parts = splitFormula(formulaStr);
             parts.forEach((p) => { organicAnswers.push(p); });
             
@@ -980,35 +940,35 @@
             renderOrgKeys(pool, false);
 
         } else if (organicDir === "struct-to-name") {
-            document.getElementById('q-desc').innerHTML = `${renderStructTable(layout, "answer", ansArr)}<div style="font-size:0.8em; color:#666; margin-top:5px;">の名称は？</div>`;
-            q.nameParts.forEach((part) => { organicAnswers.push(part); });
+            document.getElementById('q-desc').innerHTML = `${renderStructAscii(structStr, "answer")}<div style="font-size:0.8em; color:#666; margin-top:5px;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
             
             let inputsHtml = "";
             q.nameParts.forEach((part, idx) => {
+                organicAnswers.push(part);
                 inputsHtml += `<span class="org-box-large" data-idx="${idx}"></span>`;
             });
             document.getElementById('organic-build-display').innerHTML = `<div style="display:flex; justify-content:center; flex-wrap:wrap; margin-top:10px;">${inputsHtml}</div>`;
             
             let words = q.nameParts.filter(p => !p.match(/^[0-9\-\,]+$/));
             let pool = [...new Set(words)];
-            let dummies = ["メチル", "エチル", "プロパン", "ブタン", "ペンタン", "シス", "トランス", "シクロ"];
+            let dummies = ["メチル", "エチル", "プロパン", "ブタン", "ペンタン", "シス", "トランス", "シクロ", "メチル基", "エチル基", "プロピル基", "ブチル基", "ヒドロキシ基"];
             dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
             pool = shuffleArray(pool).slice(0, 8);
             renderOrgKeys(pool, true);
 
         } else if (organicDir === "formula-to-name") {
-            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.8em; font-family:serif; font-weight:bold;">${formulaStr}</div><div style="font-size:0.8em; color:#666;">の名称は？</div>`;
-            q.nameParts.forEach((part) => { organicAnswers.push(part); });
+            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.8em; font-family:serif; font-weight:bold;">${formulaStr}</div><div style="font-size:0.8em; color:#666;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
             
             let inputsHtml = "";
             q.nameParts.forEach((part, idx) => {
+                organicAnswers.push(part);
                 inputsHtml += `<span class="org-box-large" data-idx="${idx}"></span>`;
             });
             document.getElementById('organic-build-display').innerHTML = `<div style="display:flex; justify-content:center; flex-wrap:wrap; margin-top:10px;">${inputsHtml}</div>`;
             
             let words = q.nameParts.filter(p => !p.match(/^[0-9\-\,]+$/));
             let pool = [...new Set(words)];
-            let dummies = ["メチル", "エチル", "プロパン", "ブタン", "ペンタン", "シス", "トランス", "シクロ", "モノ", "ジ", "トリ", "テトラ"];
+            let dummies = ["メチル", "エチル", "プロパン", "ブタン", "ペンタン", "シス", "トランス", "シクロ", "モノ", "ジ", "トリ", "テトラ", "基", "プロピル"];
             dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
             pool = shuffleArray(pool).slice(0, 8);
             renderOrgKeys(pool, true);
@@ -1107,9 +1067,8 @@
         let ansHtml = "";
 
         if (organicDir === "name-to-struct") {
-            const layout = isCond ? q.layout_c : (q.layout_f || q.layout_c);
-            const ans = isCond ? q.ans_c : (q.ans_f || q.ans_c);
-            ansHtml = renderStructTable(layout, "answer", ans);
+            const structStr = isCond ? q.struct_c : (q.struct_f || q.struct_c);
+            ansHtml = renderStructAscii(structStr, "answer");
         } else if (organicDir === "name-to-formula") {
             ansHtml = `<span style="font-size:1.5em; font-family:serif; font-weight:bold; color:var(--primary);">${isCond ? q.formula_c : q.formula_f}</span>`;
         } else {
@@ -1138,18 +1097,17 @@
         container.innerHTML = '';
 
         const isCond = document.getElementById('organic-condensed').checked;
-        const layout = isCond ? q.layout_c : (q.layout_f || q.layout_c);
-        const ans = isCond ? q.ans_c : (q.ans_f || q.ans_c);
+        const structStr = isCond ? q.struct_c : (q.struct_f || q.struct_c);
         const formulaStr = isCond ? q.formula_c : q.formula_f;
 
         if (organicDir === "name-to-struct") {
-            header.innerHTML = `<div style="font-size:1.3em;">${q.name}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>`;
+            header.innerHTML = `<div style="font-size:1.3em;">${q.name}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>${getGeneralFormulaHtml(q.group)}`;
         } else if (organicDir === "name-to-formula") {
-            header.innerHTML = `<div style="font-size:1.3em;">${q.name}</div><div style="font-size:0.8em; color:#666;">の分子式（示性式）は？</div>`;
+            header.innerHTML = `<div style="font-size:1.3em;">${q.name}</div><div style="font-size:0.8em; color:#666;">の分子式（示性式）は？</div>${getGeneralFormulaHtml(q.group)}`;
         } else if (organicDir === "struct-to-name") {
-            header.innerHTML = `${renderStructTable(layout, "answer", ans)}<div style="font-size:0.8em; color:#666; margin-top:5px;">の名称は？</div>`;
+            header.innerHTML = `${renderStructAscii(structStr, "answer")}<div style="font-size:0.8em; color:#666; margin-top:5px;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
         } else if (organicDir === "formula-to-name") {
-            header.innerHTML = `<div style="font-family:serif; font-size:1.5em; font-weight:bold;">${formulaStr}</div><div style="font-size:0.8em; color:#666;">の名称は？</div>`;
+            header.innerHTML = `<div style="font-family:serif; font-size:1.5em; font-weight:bold;">${formulaStr}</div><div style="font-size:0.8em; color:#666;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
         }
 
         const wrongPool = rawData.filter(d => d.type === "organic" && activeOrganicGroups.includes(d.group) && d.id !== q.id && d.group !== "有機化学(数詞)");
@@ -1158,15 +1116,13 @@
         const choices = shuffleArray([q, ...wrongChoices]);
         
         choices.forEach(c => {
-            const c_layout = isCond ? c.layout_c : (c.layout_f || c.layout_c);
-            const c_ans = isCond ? c.ans_c : (c.ans_f || c.ans_c);
+            const c_struct = isCond ? c.struct_c : (c.struct_f || c.struct_c);
             const c_formula = isCond ? c.formula_c : c.formula_f;
-
             let displayText = "";
             let correctText = "";
 
             if (organicDir === "name-to-struct") {
-                displayText = renderStructTable(c_layout, "answer", c_ans);
+                displayText = renderStructAscii(c_struct, "answer");
                 correctText = "表示されている構造式"; 
             } else if (organicDir === "name-to-formula") {
                 displayText = `<span style="font-family:serif; font-weight:bold; font-size:1.2em;">${c_formula}</span>`;
@@ -1198,16 +1154,16 @@
         } else if (currentMode === 8) {
             qHeader.classList.add('hidden');
             const isCond = document.getElementById('organic-condensed').checked;
-            const layout = isCond ? q.layout_c : (q.layout_f || q.layout_c);
-            const ans = isCond ? q.ans_c : (q.ans_f || q.ans_c);
+            const structStr = isCond ? q.struct_c : (q.struct_f || q.struct_c);
             const formulaStr = isCond ? q.formula_c : q.formula_f;
+            const gfHtml = getGeneralFormulaHtml(q.group);
 
             if (organicDir === "name-to-struct" || organicDir === "name-to-formula") {
-                front.innerHTML = `<div style="font-size:1.8em; font-weight:bold;">${q.name}</div><div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>`;
+                front.innerHTML = `<div style="font-size:1.8em; font-weight:bold;">${q.name}</div><div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>${gfHtml}`;
             } else if (organicDir === "struct-to-name") {
-                front.innerHTML = `${renderStructTable(layout, "answer", ans)}<div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>`;
+                front.innerHTML = `${renderStructAscii(structStr, "answer")}<div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>${gfHtml}`;
             } else if (organicDir === "formula-to-name") {
-                front.innerHTML = `<div style="font-size:1.8em; font-family:serif; font-weight:bold;">${formulaStr}</div><div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>`;
+                front.innerHTML = `<div style="font-size:1.8em; font-family:serif; font-weight:bold;">${formulaStr}</div><div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>${gfHtml}`;
             }
         } else {
             qHeader.classList.remove('hidden');
@@ -1239,16 +1195,16 @@
             }
         } else if (currentMode === 8) {
             const isCond = document.getElementById('organic-condensed').checked;
-            const layout = isCond ? q.layout_c : (q.layout_f || q.layout_c);
-            const ans = isCond ? q.ans_c : (q.ans_f || q.ans_c);
+            const structStr = isCond ? q.struct_c : (q.struct_f || q.struct_c);
             const formulaStr = isCond ? q.formula_c : q.formula_f;
+            const gfHtml = getGeneralFormulaHtml(q.group);
 
             if (organicDir === "name-to-struct") {
-                content.innerHTML = renderStructTable(layout, "answer", ans);
+                content.innerHTML = renderStructAscii(structStr, "answer") + gfHtml;
             } else if (organicDir === "name-to-formula") {
-                content.innerHTML = `<div style="font-size:2em; font-family:serif; font-weight:bold; color:var(--primary);">${formulaStr}</div>`;
+                content.innerHTML = `<div style="font-size:2em; font-family:serif; font-weight:bold; color:var(--primary);">${formulaStr}</div>${gfHtml}`;
             } else {
-                content.innerHTML = `<div style="font-size:2em; font-weight:bold;">${q.name}</div>`;
+                content.innerHTML = `<div style="font-size:2em; font-weight:bold;">${q.name}</div>${gfHtml}`;
             }
         } else {
             content.innerHTML = `<div style="font-family:serif; font-size:1.6em; font-weight:bold;">${q.eq}</div>`;
@@ -1497,11 +1453,10 @@
                     }
                 } else if (q.type === 'organic') {
                     const isCond = document.getElementById('organic-condensed').checked;
-                    const layout = isCond ? q.layout_c : (q.layout_f || q.layout_c);
-                    const ans = isCond ? q.ans_c : (q.ans_f || q.ans_c);
+                    const structStr = isCond ? q.struct_c : (q.struct_f || q.struct_c);
                     const formulaStr = isCond ? q.formula_c : q.formula_f;
 
-                    let structHtml = layout ? renderStructTable(layout, "answer", ans) : `<div style="font-family:serif; font-weight:bold; margin-top:5px;">${q.eq}</div>`;
+                    let structHtml = structStr ? renderStructAscii(structStr, "answer") : `<div style="font-family:serif; font-weight:bold; margin-top:5px;">${q.eq}</div>`;
 
                     if (organicDir === "name-to-struct") {
                         item.innerHTML = `
@@ -1558,7 +1513,14 @@
             
             let displayEq = item.eq;
             if (item.type === 'organic') {
-                displayEq = document.getElementById('organic-condensed').checked ? (item.formula_c || item.eq) : (item.formula_f || item.eq);
+                const cb = document.getElementById('organic-condensed');
+                const isCond = cb ? cb.checked : false;
+                displayEq = isCond ? (item.formula_c || item.eq) : (item.formula_f || item.eq);
+                
+                const gf = generalFormulaMap[item.group];
+                if(gf) {
+                    badgeText += ` <span style="color:#10b981;">(一般式: ${gf})</span>`;
+                }
             }
 
             return `

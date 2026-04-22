@@ -268,9 +268,13 @@
                 </select>
             </div>
             
-            <div class="input-group" style="justify-content:flex-start; gap:10px; margin-top:5px;">
-                <input type="checkbox" id="organic-use-common" checked style="cursor:pointer;">
-                <label for="organic-use-common" style="font-size:0.9em; color:#4b5563; cursor:pointer;">慣用名で出題する（例: アセトアルデヒド）</label>
+            <div class="input-group" style="margin-top:5px;">
+                <label style="font-size:0.9em; color:#4b5563;">慣用名の使用</label>
+                <select id="organic-use-common" style="font-size:0.85em;">
+                    <option value="all">すべて慣用名を使用</option>
+                    <option value="common" selected>一般的な慣用名のみ</option>
+                    <option value="none">一切使用しない（IUPAC名）</option>
+                </select>
             </div>
             <div class="input-group" style="justify-content:flex-start; gap:10px; margin-top:5px;">
                 <input type="checkbox" id="organic-show-general" style="cursor:pointer;">
@@ -357,7 +361,6 @@
             <div class="keypad-area">
                 <div class="keypad-row" id="org-kb-1"></div>
                 <div class="keypad-row" id="org-kb-2"></div>
-                <div class="keypad-row" id="org-kb-3"></div>
                 <div class="keypad-row">
                     <button class="key-btn key-control" onclick="mode9In('BS')">1字消す</button>
                     <button class="key-btn key-control" onclick="mode9In('CLEAR')">全クリア</button>
@@ -425,13 +428,36 @@
         "有機化学(カルボン酸・エステル)": "飽和1価カルボン酸: CₙH₂ₙO₂  エステル: CₙH₂ₙO₂"
     };
 
+    function shouldUseCommonName(q) {
+        if (!q.name_iupac) return true;          // 別名がない→常にそのまま
+        const mode = document.getElementById('organic-use-common').value;
+        if (mode === 'all')    return true;
+        if (mode === 'none')   return false;
+        return q.commonName === true;
+    }
     function getQName(q) {
-        const useCommon = document.getElementById('organic-use-common').checked;
-        return (useCommon || !q.name_iupac) ? q.name : q.name_iupac;
+        return shouldUseCommonName(q) ? q.name : q.name_iupac;
     }
     function getQNameParts(q) {
-        const useCommon = document.getElementById('organic-use-common').checked;
-        return (useCommon || !q.nameParts_iupac) ? q.nameParts : q.nameParts_iupac;
+        return shouldUseCommonName(q) ? q.nameParts : (q.nameParts_iupac || q.nameParts);
+    }
+    // 表示中の名称と反対側の別名を返す（ない場合は空文字）
+    function getAltName(q) {
+        if (!q.name_iupac) return "";
+        return shouldUseCommonName(q) ? q.name_iupac : q.name;
+    }
+    // 解説ボックスの末尾に別名を追記したHTMLを返す
+    function buildExplanationHtml(q) {
+        const alt = getAltName(q);
+        const altHtml = alt
+            ? `<div style="margin-top:6px; font-size:0.9em; color:#6366f1; font-weight:bold;">別名: <span style="font-family:serif;">${alt}</span></div>`
+            : "";
+        if (q.explanation) {
+            return `<div class="explanation-box"><div class="explanation-box-title">💡 命名法の解説</div>${q.explanation}${altHtml}</div>`;
+        } else if (alt) {
+            return `<div class="explanation-box">${altHtml}</div>`;
+        }
+        return "";
     }
 
     function getGeneralFormulaHtml(group) {
@@ -661,22 +687,22 @@
          layout_c: [["", "[CH₃]", "", ""], ["", "|", "", ""], ["-", "[CH]", "-", "[CH₃]"]], 
          layout_f: [["", "[CH₃]", "", ""], ["", "|", "", ""], ["-", "[CH]", "-", "[CH₃]"]]}, 
 
-        {id: "o47", group: "有機化学(アルコール・エーテル)", type: "organic", name: "エタノール", nameParts: ["エタノール"], explanation: "炭素数2のアルコールです。酒類の主成分です。",
+        {id: "o47", group: "有機化学(アルコール・エーテル)", type: "organic", name: "エタノール", commonName: true, name_iupac: "エチルアルコール", nameParts: ["エタノール"], explanation: "炭素数2のアルコールです。酒類の主成分です。",
          formula_c: "CH₃CH₂OH", formula_f: "C₂H₆O",
          layout_c: [["[CH₃]", "-", "[CH₂]", "-", "[OH]"]],
          layout_f: [["", "", "[H]", "", "[H]", "", "", "", ""], ["", "", "|", "", "|", "", "", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "|", "", "|", "", "", "", ""], ["", "", "[H]", "", "[H]", "", "", "", ""]]},
          
-        {id: "o48", group: "有機化学(アルコール・エーテル)", type: "organic", name: "ジメチルエーテル", nameParts: ["ジメチルエーテル"], explanation: "最も単純なエーテルで、エタノールの構造異性体です。",
+        {id: "o48", group: "有機化学(アルコール・エーテル)", type: "organic", name: "ジメチルエーテル", commonName: false, name_iupac: "メトキシメタン", nameParts: ["ジメチルエーテル"], explanation: "最も単純なエーテルで、エタノールの構造異性体です。",
          formula_c: "CH₃OCH₃", formula_f: "C₂H₆O",
          layout_c: [["[CH₃]", "-", "[O]", "-", "[CH₃]"]],
          layout_f: [["", "", "[H]", "", "", "", "[H]", "", ""], ["", "", "|", "", "", "", "|", "", ""], ["[H]", "-", "[C]", "-", "[O]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "", "", "|", "", ""], ["", "", "[H]", "", "", "", "[H]", "", ""]]},
          
-        {id: "o49", group: "有機化学(アルコール・エーテル)", type: "organic", name: "1-プロパノール", nameParts: ["1", "-", "プロパノール"], explanation: "プロパンの端の炭素にヒドロキシ基が結合した第一級アルコールです。",
+        {id: "o49", group: "有機化学(アルコール・エーテル)", type: "organic", name: "1-プロパノール", commonName: false, name_iupac: "n-プロパノール", nameParts: ["1", "-", "プロパノール"], explanation: "プロパンの端の炭素にヒドロキシ基が結合した第一級アルコールです。",
          formula_c: "CH₃CH₂CH₂OH", formula_f: "C₃H₈O",
          layout_c: [["[CH₃]", "-", "[CH₂]", "-", "[CH₂]", "-", "[OH]"]],
          layout_f: [["", "", "[H]", "", "[H]", "", "[H]", "", "", "", ""], ["", "", "|", "", "|", "", "|", "", "", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "|", "", "|", "", "|", "", "", "", ""], ["", "", "[H]", "", "[H]", "", "[H]", "", "", "", ""]]},
          
-        {id: "o50", group: "有機化学(アルコール・エーテル)", type: "organic", name: "2-プロパノール", nameParts: ["2", "-", "プロパノール"], explanation: "プロパンの中央の炭素にヒドロキシ基が結合した第二級アルコールです。酸化されるとアセトンになります。",
+        {id: "o50", group: "有機化学(アルコール・エーテル)", type: "organic", name: "2-プロパノール", commonName: false, name_iupac: "イソプロパノール", nameParts: ["2", "-", "プロパノール"], explanation: "プロパンの中央の炭素にヒドロキシ基が結合した第二級アルコールです。酸化されるとアセトンになります。",
          formula_c: "CH₃CH(OH)CH₃", formula_f: "C₃H₈O",
          layout_c: [
              ["", "", "[OH]", "", ""], 
@@ -695,12 +721,12 @@
              ["", "", "[H]", "", "[H]", "", "[H]", "", ""]
          ]},
          
-        {id: "o51", group: "有機化学(アルコール・エーテル)", type: "organic", name: "エチルメチルエーテル", nameParts: ["エチルメチルエーテル"], explanation: "エチル基とメチル基がエーテル結合した物質です。1-プロパノールや2-プロパノールの構造異性体です。",
+        {id: "o51", group: "有機化学(アルコール・エーテル)", type: "organic", name: "エチルメチルエーテル", commonName: false, name_iupac: "メトキシエタン", nameParts: ["エチルメチルエーテル"], explanation: "エチル基とメチル基がエーテル結合した物質です。1-プロパノールや2-プロパノールの構造異性体です。",
          formula_c: "CH₃CH₂OCH₃", formula_f: "C₃H₈O",
          layout_c: [["[CH₃]", "-", "[CH₂]", "-", "[O]", "-", "[CH₃]"]],
          layout_f: [["", "", "[H]", "", "[H]", "", "", "", "[H]", "", ""], ["", "", "|", "", "|", "", "", "", "|", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "|", "", "", "", "|", "", ""], ["", "", "[H]", "", "[H]", "", "", "", "[H]", "", ""]]},
 
-        {id: "o52", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "ホルムアルデヒド", name_iupac: "メタナール", nameParts: ["ホルムアルデヒド"], nameParts_iupac: ["メタナール"], explanation: "最も簡単な構造のアルデヒドです。水溶液はホルマリンと呼ばれます。",
+        {id: "o52", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "ホルムアルデヒド", commonName: true, name_iupac: "メタナール", nameParts: ["ホルムアルデヒド"], nameParts_iupac: ["メタナール"], explanation: "最も簡単な構造のアルデヒドです。水溶液はホルマリンと呼ばれます。",
          formula_c: "HCHO", formula_f: "CH₂O",
          layout_c: [
              ["", "", "O"], 
@@ -713,7 +739,7 @@
              ["[H]", "-", "[C]", "-", "[H]"]
          ]},
 
-        {id: "o53", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "アセトアルデヒド", name_iupac: "エタナール", nameParts: ["アセトアルデヒド"], nameParts_iupac: ["エタナール"], explanation: "エタノールの酸化によって得られるアルデヒドです。",
+        {id: "o53", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "アセトアルデヒド", commonName: true, name_iupac: "エタナール", nameParts: ["アセトアルデヒド"], nameParts_iupac: ["エタナール"], explanation: "エタノールの酸化によって得られるアルデヒドです。",
          formula_c: "CH₃CHO", formula_f: "C₂H₄O",
          layout_c: [
              ["", "", "O", "", ""], 
@@ -728,7 +754,7 @@
              ["", "", "[H]", "", "", "", ""]
          ]},
 
-        {id: "o54", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "アセトン", name_iupac: "プロパン-2-オン", nameParts: ["アセトン"], nameParts_iupac: ["プロパン", "-", "2", "-", "オン"], explanation: "最も簡単な構造のケトンです。水にも有機溶媒にもよく溶けます。",
+        {id: "o54", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "アセトン", commonName: true, name_iupac: "プロパン-2-オン", nameParts: ["アセトン"], nameParts_iupac: ["プロパン", "-", "2", "-", "オン"], explanation: "最も簡単な構造のケトンです。水にも有機溶媒にもよく溶けます。",
          formula_c: "CH₃COCH₃", formula_f: "C₃H₆O",
          layout_c: [
              ["", "", "O", "", ""], 
@@ -743,7 +769,7 @@
              ["", "", "[H]", "", "", "", "[H]", "", ""] 
          ]},
 
-        {id: "o55", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "ギ酸", name_iupac: "メタン酸", nameParts: ["ギ酸"], nameParts_iupac: ["メタン酸"], explanation: "カルボン酸ですが、アルデヒド基の構造も併せ持つため還元性を示します。",
+        {id: "o55", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "ギ酸", commonName: true, name_iupac: "メタン酸", nameParts: ["ギ酸"], nameParts_iupac: ["メタン酸"], explanation: "カルボン酸ですが、アルデヒド基の構造も併せ持つため還元性を示します。",
          formula_c: "HCOOH", formula_f: "CH₂O₂",
          layout_c: [
              ["", "", "O", "", ""], 
@@ -756,7 +782,7 @@
              ["[H]", "-", "[C]", "-", "[O]", "-", "[H]"]
          ]},
 
-        {id: "o56", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "酢酸", name_iupac: "エタン酸", nameParts: ["酢酸"], nameParts_iupac: ["エタン酸"], explanation: "食酢に含まれる弱酸性のカルボン酸です。",
+        {id: "o56", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "酢酸", commonName: true, name_iupac: "エタン酸", nameParts: ["酢酸"], nameParts_iupac: ["エタン酸"], explanation: "食酢に含まれる弱酸性のカルボン酸です。",
          formula_c: "CH₃COOH", formula_f: "C₂H₄O₂",
          layout_c: [
              ["", "", "O", "", ""], 
@@ -911,7 +937,7 @@
              ["", "", "[CH₂]", "-", "[CH₂]", "", ""]
          ]},
 
-        {id: "o34", group: "炭化水素(高2・3学期)", type: "organic", name: "エチレン", name_iupac: "エテン", nameParts: ["エチレン"], nameParts_iupac: ["エテン"], explanation: "炭素数2のアルケンです。IUPAC名は「エテン」ですが、慣用名の「エチレン」が広く使われます。",
+        {id: "o34", group: "炭化水素(高2・3学期)", type: "organic", name: "エチレン", commonName: true, name_iupac: "エテン", nameParts: ["エチレン"], nameParts_iupac: ["エテン"], explanation: "炭素数2のアルケンです。IUPAC名は「エテン」ですが、慣用名の「エチレン」が広く使われます。",
          formula_c: "CH₂=CH₂", formula_f: "C₂H₄",
          layout_c: [["[CH₂]", "=", "[CH₂]"]], 
          layout_f: [
@@ -999,7 +1025,7 @@
              ["", "", "[H]", "", "", "", "[H]", "", ""]
          ]},
 
-        {id: "o39", group: "炭化水素(高2・3学期)", type: "organic", name: "アセチレン", name_iupac: "エチン", nameParts: ["アセチレン"], nameParts_iupac: ["エチン"], explanation: "炭素数2のアルキンです。IUPAC名は「エチン」ですが、慣用名の「アセチレン」が広く使われます。",
+        {id: "o39", group: "炭化水素(高2・3学期)", type: "organic", name: "アセチレン", commonName: true, name_iupac: "エチン", nameParts: ["アセチレン"], nameParts_iupac: ["エチン"], explanation: "炭素数2のアルキンです。IUPAC名は「エチン」ですが、慣用名の「アセチレン」が広く使われます。",
          formula_c: "CH≡CH", formula_f: "C₂H₂",
          layout_c: [["[CH]", "≡", "[CH]"]], 
          layout_f: [["[H]", "-", "[C]", "≡", "[C]", "-", "[H]"]]},
@@ -1038,64 +1064,64 @@
          ]},
 
         // ── 有機化学(アルコール・エーテル) 追加 ──────────────────────────────
-        {id: "o57", group: "有機化学(アルコール・エーテル)", type: "organic", name: "メタノール", nameParts: ["メタノール"], explanation: "炭素数1の最も簡単なアルコールです。猛毒で飲用不可。工業的にはCOとH₂から合成されます。",
+        {id: "o57", group: "有機化学(アルコール・エーテル)", type: "organic", name: "メタノール", commonName: true, name_iupac: "メチルアルコール", nameParts: ["メタノール"], explanation: "炭素数1の最も簡単なアルコールです。猛毒で飲用不可。工業的にはCOとH₂から合成されます。",
          formula_c: "CH₃OH", formula_f: "CH₄O",
          layout_c: [["[CH₃]", "-", "[OH]"]],
          layout_f: [["", "", "[H]", "", "", "", ""], ["", "", "|", "", "", "", ""], ["[H]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "|", "", "", "", ""], ["", "", "[H]", "", "", "", ""]]},
 
-        {id: "o58", group: "有機化学(アルコール・エーテル)", type: "organic", name: "ジエチルエーテル", nameParts: ["ジエチルエーテル"], explanation: "最も代表的なエーテルです。麻酔作用があり、極めて引火しやすい。",
+        {id: "o58", group: "有機化学(アルコール・エーテル)", type: "organic", name: "ジエチルエーテル", commonName: true, name_iupac: "エトキシエタン", nameParts: ["ジエチルエーテル"], explanation: "最も代表的なエーテルです。麻酔作用があり、極めて引火しやすい。",
          formula_c: "C₂H₅OC₂H₅", formula_f: "C₄H₁₀O",
          layout_c: [["[CH₃]", "-", "[CH₂]", "-", "[O]", "-", "[CH₂]", "-", "[CH₃]"]],
          layout_f: [["", "", "[H]", "", "[H]", "", "", "", "[H]", "", "[H]", "", ""], ["", "", "|", "", "|", "", "", "", "|", "", "|", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[C]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "|", "", "", "", "|", "", "|", "", ""], ["", "", "[H]", "", "[H]", "", "", "", "[H]", "", "[H]", "", ""]]},
 
-        {id: "o59", group: "有機化学(アルコール・エーテル)", type: "organic", name: "1-ブタノール", nameParts: ["1", "-", "ブタノール"], explanation: "炭素数4の第一級アルコールです。",
+        {id: "o59", group: "有機化学(アルコール・エーテル)", type: "organic", name: "1-ブタノール", commonName: false, name_iupac: "n-ブタノール", nameParts: ["1", "-", "ブタノール"], explanation: "炭素数4の第一級アルコールです。",
          formula_c: "CH₃CH₂CH₂CH₂OH", formula_f: "C₄H₁₀O",
          layout_c: [["[CH₃]", "-", "[CH₂]", "-", "[CH₂]", "-", "[CH₂]", "-", "[OH]"]],
          layout_f: [["", "", "[H]", "", "[H]", "", "[H]", "", "[H]", "", "", "", ""], ["", "", "|", "", "|", "", "|", "", "|", "", "", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "|", "", "|", "", "|", "", "|", "", "", "", ""], ["", "", "[H]", "", "[H]", "", "[H]", "", "[H]", "", "", "", ""]]},
 
-        {id: "o60", group: "有機化学(アルコール・エーテル)", type: "organic", name: "2-ブタノール", nameParts: ["2", "-", "ブタノール"], explanation: "炭素数4の第二級アルコールです。酸化されると2-ブタノン（メチルエチルケトン）になります。",
+        {id: "o60", group: "有機化学(アルコール・エーテル)", type: "organic", name: "2-ブタノール", commonName: false, name_iupac: "sec-ブタノール", nameParts: ["2", "-", "ブタノール"], explanation: "炭素数4の第二級アルコールです。酸化されると2-ブタノン（メチルエチルケトン）になります。",
          formula_c: "CH₃CH(OH)CH₂CH₃", formula_f: "C₄H₁₀O",
          layout_c: [["", "", "[OH]", "", "", "", ""], ["", "", "|", "", "", "", ""], ["[CH₃]", "-", "[CH]", "-", "[CH₂]", "-", "[CH₃]"]],
          layout_f: [["", "", "", "", "[H]", "", "", "", "", "", ""], ["", "", "", "", "|", "", "", "", "", "", ""], ["", "", "", "", "[O]", "", "", "", "", "", ""], ["", "", "", "", "|", "", "", "", "", "", ""], ["", "", "[H]", "", "|", "", "[H]", "", "[H]", "", ""], ["", "", "|", "", "|", "", "|", "", "|", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "", "", "|", "", "|", "", ""], ["", "", "[H]", "", "", "", "[H]", "", "[H]", "", ""]]},
 
-        {id: "o61", group: "有機化学(アルコール・エーテル)", type: "organic", name: "エチレングリコール", nameParts: ["エチレングリコール"], explanation: "2価アルコール（ジオール）です。不凍液や合成繊維（ポリエステル）の原料として使われます。",
+        {id: "o61", group: "有機化学(アルコール・エーテル)", type: "organic", name: "エチレングリコール", commonName: true, name_iupac: "エタン-1,2-ジオール", nameParts: ["エチレングリコール"], explanation: "2価アルコール（ジオール）です。不凍液や合成繊維（ポリエステル）の原料として使われます。",
          formula_c: "HOCH₂CH₂OH", formula_f: "C₂H₆O₂",
          layout_c: [["[HO]", "-", "[CH₂]", "-", "[CH₂]", "-", "[OH]"]],
          layout_f: [["", "", "", "", "[H]", "", "[H]", "", "", "", ""], ["", "", "", "", "|", "", "|", "", "", "", ""], ["[H]", "-", "[O]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "", "", "|", "", "|", "", "", "", ""], ["", "", "", "", "[H]", "", "[H]", "", "", "", ""]]},
 
-        {id: "o62", group: "有機化学(アルコール・エーテル)", type: "organic", name: "グリセリン", nameParts: ["グリセリン"], explanation: "3価アルコール（トリオール）です。油脂の構成成分で、化粧品・食品など幅広く利用されます。",
+        {id: "o62", group: "有機化学(アルコール・エーテル)", type: "organic", name: "グリセリン", commonName: true, name_iupac: "プロパン-1,2,3-トリオール", nameParts: ["グリセリン"], explanation: "3価アルコール（トリオール）です。油脂の構成成分で、化粧品・食品など幅広く利用されます。",
          formula_c: "HOCH₂CH(OH)CH₂OH", formula_f: "C₃H₈O₃",
          layout_c: [["", "", "", "", "[OH]", "", "", "", ""], ["", "", "", "", "|", "", "", "", ""], ["[HO]", "-", "[CH₂]", "-", "[CH]", "-", "[CH₂]", "-", "[OH]"]],
          layout_f: [["", "", "", "", "", "", "[H]", "", "", "", "", "", ""], ["", "", "", "", "", "", "|", "", "", "", "", "", ""], ["", "", "", "", "", "", "[O]", "", "", "", "", "", ""], ["", "", "", "", "", "", "|", "", "", "", "", "", ""], ["", "", "", "", "[H]", "", "|", "", "[H]", "", "", "", ""], ["", "", "", "", "|", "", "|", "", "|", "", "", "", ""], ["[H]", "-", "[O]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "", "", "|", "", "|", "", "|", "", "", "", ""], ["", "", "", "", "[H]", "", "[H]", "", "[H]", "", "", "", ""]]},
 
         // ── 有機化学(アルデヒド・ケトン) 追加 ────────────────────────────────
-        {id: "o63", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "プロパナール", nameParts: ["プロパナール"], explanation: "炭素数3の直鎖アルデヒドです。プロピオンアルデヒドとも呼ばれます。銀鏡反応・フェーリング反応を示します。",
+        {id: "o63", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "プロパナール", commonName: false, name_iupac: "プロピオンアルデヒド", nameParts: ["プロパナール"], explanation: "炭素数3の直鎖アルデヒドです。プロピオンアルデヒドとも呼ばれます。銀鏡反応・フェーリング反応を示します。",
          formula_c: "CH₃CH₂CHO", formula_f: "C₃H₆O",
          layout_c: [["", "", "", "", "O", "", ""], ["", "", "", "", "||", "", ""], ["[CH₃]", "-", "[CH₂]", "-", "[C]", "-", "[H]"]],
          layout_f: [["", "", "[H]", "", "[H]", "", "O", "", ""], ["", "", "|", "", "|", "", "||", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "|", "", "", "", ""], ["", "", "[H]", "", "[H]", "", "", "", ""]]},
 
-        {id: "o64", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "2-ブタノン", nameParts: ["2", "-", "ブタノン"], explanation: "メチルエチルケトン（MEK）とも呼ばれる最も単純な非対称ケトンです。溶媒として広く使われます。",
+        {id: "o64", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "2-ブタノン", commonName: false, name_iupac: "メチルエチルケトン", nameParts: ["2", "-", "ブタノン"], explanation: "メチルエチルケトン（MEK）とも呼ばれる最も単純な非対称ケトンです。溶媒として広く使われます。",
          formula_c: "CH₃COCH₂CH₃", formula_f: "C₄H₈O",
          layout_c: [["", "", "O", "", "", "", ""], ["", "", "||", "", "", "", ""], ["[CH₃]", "-", "[C]", "-", "[CH₂]", "-", "[CH₃]"]],
          layout_f: [["", "", "[H]", "", "O", "", "[H]", "", "[H]", "", ""], ["", "", "|", "", "||", "", "|", "", "|", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "", "", "|", "", "|", "", ""], ["", "", "[H]", "", "", "", "[H]", "", "[H]", "", ""]]},
 
         // ── 有機化学(カルボン酸・エステル) 追加 ──────────────────────────────
-        {id: "o65", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "プロパン酸", nameParts: ["プロパン酸"], explanation: "炭素数3の飽和カルボン酸です。プロピオン酸とも呼ばれます。",
+        {id: "o65", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "プロパン酸", commonName: false, name_iupac: "プロピオン酸", nameParts: ["プロパン酸"], explanation: "炭素数3の飽和カルボン酸です。プロピオン酸とも呼ばれます。",
          formula_c: "CH₃CH₂COOH", formula_f: "C₃H₆O₂",
          layout_c: [["", "", "", "", "O", "", ""], ["", "", "", "", "||", "", ""], ["[CH₃]", "-", "[CH₂]", "-", "[C]", "-", "[OH]"]],
          layout_f: [["", "", "[H]", "", "[H]", "", "O", "", "", "", ""], ["", "", "|", "", "|", "", "||", "", "", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "|", "", "|", "", "", "", "", "", ""], ["", "", "[H]", "", "[H]", "", "", "", "", "", ""]]},
 
-        {id: "o66", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "シュウ酸", name_iupac: "エタン二酸", nameParts: ["シュウ酸"], nameParts_iupac: ["エタン二酸"], explanation: "最も単純な二価カルボン酸です。還元性を示し、過マンガン酸カリウムの標定に用いられます。",
+        {id: "o66", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "シュウ酸", commonName: true, name_iupac: "エタン二酸", nameParts: ["シュウ酸"], nameParts_iupac: ["エタン二酸"], explanation: "最も単純な二価カルボン酸です。還元性を示し、過マンガン酸カリウムの標定に用いられます。",
          formula_c: "HOOCCOOH", formula_f: "C₂H₂O₄",
          layout_c: [["", "", "O", "", "O", "", ""], ["", "", "||", "", "||", "", ""], ["[HO]", "-", "[C]", "-", "[C]", "-", "[OH]"]],
          layout_f: [["", "", "O", "", "O", "", "", "", ""], ["", "", "||", "", "||", "", "", "", ""], ["[H]", "-", "[O]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"]]},
 
-        {id: "o67", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "マレイン酸", name_iupac: "シス-2-ブテン二酸", nameParts: ["マレイン酸"], nameParts_iupac: ["シス", "-", "2", "-", "ブテン二酸"], explanation: "シス-ブテン二酸。二つのカルボキシ基が二重結合の同じ側にあります。加熱で無水マレイン酸になります。",
+        {id: "o67", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "マレイン酸", commonName: true, name_iupac: "シス-2-ブテン二酸", nameParts: ["マレイン酸"], nameParts_iupac: ["シス", "-", "2", "-", "ブテン二酸"], explanation: "シス-ブテン二酸。二つのカルボキシ基が二重結合の同じ側にあります。加熱で無水マレイン酸になります。",
          formula_c: "HOOCCH=CHCOOH(シス)", formula_f: "C₄H₄O₄(シス)",
          layout_c: [["[COOH]", "", "", "", "", "", "[COOH]"], ["", "\\", "", "", "", "/", ""], ["", "", "[C]", "=", "[C]", "", ""], ["", "/", "", "", "", "\\", ""], ["[H]", "", "", "", "", "", "[H]"]],
          layout_f: [["[COOH]", "", "", "", "", "", "[COOH]"], ["", "\\", "", "", "", "/", ""], ["", "", "[C]", "=", "[C]", "", ""], ["", "/", "", "", "", "\\", ""], ["[H]", "", "", "", "", "", "[H]"]]},
 
-        {id: "o68", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "フマル酸", name_iupac: "トランス-2-ブテン二酸", nameParts: ["フマル酸"], nameParts_iupac: ["トランス", "-", "2", "-", "ブテン二酸"], explanation: "トランス-ブテン二酸。二つのカルボキシ基が二重結合の反対側にあります。マレイン酸の幾何異性体です。",
+        {id: "o68", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "フマル酸", commonName: true, name_iupac: "トランス-2-ブテン二酸", nameParts: ["フマル酸"], nameParts_iupac: ["トランス", "-", "2", "-", "ブテン二酸"], explanation: "トランス-ブテン二酸。二つのカルボキシ基が二重結合の反対側にあります。マレイン酸の幾何異性体です。",
          formula_c: "HOOCCH=CHCOOH(トランス)", formula_f: "C₄H₄O₄(トランス)",
          layout_c: [["[COOH]", "", "", "", "", "", "[H]"], ["", "\\", "", "", "", "/", ""], ["", "", "[C]", "=", "[C]", "", ""], ["", "/", "", "", "", "\\", ""], ["[H]", "", "", "", "", "", "[COOH]"]],
          layout_f: [["[COOH]", "", "", "", "", "", "[H]"], ["", "\\", "", "", "", "/", ""], ["", "", "[C]", "=", "[C]", "", ""], ["", "/", "", "", "", "\\", ""], ["[H]", "", "", "", "", "", "[COOH]"]]},
@@ -1279,6 +1305,9 @@
             if (organicDir.includes("struct") || organicDir === "name-to-formula") {
                 list = list.filter(d => d.group !== "有機化学(数詞)");
             }
+            if (organicDir === "name-to-formula" || organicDir === "formula-to-name") {
+                list = list.filter(d => d.group !== "有機化学(基)");
+            }
             if (list.length === 0) return alert("選択された有機化学グループに出題可能なデータがありません。");
             
         } else {
@@ -1433,9 +1462,9 @@
             document.getElementById('organic-build-display').innerHTML = renderStructTable(layout, "input", organicAnswers);
             
             let pool = [...new Set(organicAnswers)];
-            let dummies = isCond ? ["CH₃", "CH₂", "CH", "C", "H", "OH", "O", "NH₂", "COOH", "CHO"] : ["C", "H", "O", "N", "CH₃", "CH₂", "OH"];
+            let dummies = isCond ? ["CH₃", "CH₂", "CH", "C", "H", "OH", "O", "NH₂", "COOH", "CHO", "COO"] : ["C", "H", "O", "N", "S", "CH₃", "CH₂", "OH", "NH₂"];
             dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
-            pool = shuffleArray(pool).slice(0, 10);
+            pool = shuffleArray(pool).slice(0, 12);
             renderOrgKeys(pool, false);
             
         } else if (organicDir === "name-to-formula") {
@@ -1608,8 +1637,8 @@
         m.className = 'result-message ' + (ok ? 'correct' : 'wrong');
         m.innerHTML = ok ? "正解！" : `不正解...<br><div style="font-size:0.9em; color:#666; margin-top:5px;">正解:</div>${ansHtml}`;
         
-        if (q.type === 'organic' && q.explanation) {
-            m.innerHTML += `<div class="explanation-box"><div class="explanation-box-title">💡 命名法の解説</div>${q.explanation}</div>`;
+        if (q.type === 'organic') {
+            m.innerHTML += buildExplanationHtml(q);
         }
         
         if(ok) score++; 
@@ -1757,8 +1786,9 @@
                 content.innerHTML = `<div style="font-size:2em; font-weight:bold;">${getQName(q)}</div>${gfHtml}`;
             }
             
-            if (q.explanation) {
-                content.innerHTML += `<div class="explanation-box" style="margin-top:15px; width:100%; box-sizing:border-box;"><div class="explanation-box-title">💡 命名法の解説</div>${q.explanation}</div>`;
+            const expHtml = buildExplanationHtml(q);
+            if (expHtml) {
+                content.innerHTML += `<div style="margin-top:15px; width:100%; box-sizing:border-box;">${expHtml}</div>`;
             }
 
         } else {
@@ -1800,18 +1830,19 @@
             choices.forEach(c => container.appendChild(createOption(getColoredText(c, c), c === q.color, q.color)));
         } else {
             header.innerHTML = `<div>${getColoredText(q.color, q.color)} の物質は？</div>`;
+            const correctIds = new Set(rawData.filter(d => d.type === "color" && activeColorGroups.includes(d.group) && d.color === q.color).map(d => d.id));
+            const seenIds = new Set([...correctIds]);
             const wrongPool = [];
-            const seenColors = new Set([q.color]); 
             rawData.forEach(d => {
-                if (d.type === "color" && activeColorGroups.includes(d.group) && !seenColors.has(d.color)) {
-                    seenColors.add(d.color);
+                if (d.type === "color" && activeColorGroups.includes(d.group) && !seenIds.has(d.id)) {
+                    seenIds.add(d.id);
                     wrongPool.push(d);
                 }
             });
             const shuffledWrongPool = shuffleArray(wrongPool);
             const wrongChoices = shuffledWrongPool.slice(0, 3);
             const choices = shuffleArray([q, ...wrongChoices]);
-            choices.forEach(c => container.appendChild(createOption(`${c.eq} (${c.name})`, c.eq === q.eq, q.eq)));
+            choices.forEach(c => container.appendChild(createOption(`${c.eq} (${c.name})`, correctIds.has(c.id), q.eq + ' (' + q.name + ')')));
         }
     }
 
@@ -1849,14 +1880,27 @@
             msg.innerHTML = isCorrect ? "正解！" : `不正解... 正解は: ${correctText}`;
             
             const q = quizList[currentIndex];
-            if (q.type === 'organic' && q.explanation) {
-                msg.innerHTML += `<div class="explanation-box"><div class="explanation-box-title">💡 命名法の解説</div>${q.explanation}</div>`;
+            if (q.type === 'organic') {
+                msg.innerHTML += buildExplanationHtml(q);
             }
 
             if (isCorrect) score++;
             else wrongQuestions.push(q);
             document.getElementById('next-btn').classList.remove('hidden');
-            div.style.backgroundColor = isCorrect ? "#d1fae5" : "#fee2e2";
+
+            // 選択した選択肢を色付け、それ以外をグレーアウト
+            const container = div.parentElement;
+            if (container) {
+                container.querySelectorAll('.option-btn').forEach(btn => {
+                    if (btn === div) {
+                        btn.style.backgroundColor = isCorrect ? "#d1fae5" : "#fee2e2";
+                        btn.style.borderColor = isCorrect ? "var(--correct)" : "var(--wrong)";
+                    } else {
+                        btn.style.opacity = "0.38";
+                        btn.style.pointerEvents = "none";
+                    }
+                });
+            }
         };
         return div;
     }
@@ -1909,9 +1953,14 @@
     }
 
     function mode2Keypad(v) { 
+        if(v==='CLEAR') {
+            document.querySelectorAll('.coeff-input').forEach(i => { i.value=""; i.classList.remove('active-input'); });
+            const first = document.querySelector('.coeff-input');
+            if (first) { selectedCoeffInput = first; first.classList.add('active-input'); }
+            return;
+        }
         if(!selectedCoeffInput) return; 
-        if(v==='BS') selectedCoeffInput.value=""; 
-        else if(v==='CLEAR') document.querySelectorAll('.coeff-input').forEach(i=>i.value="");
+        if(v==='BS') selectedCoeffInput.value="";
         else selectedCoeffInput.value=v; 
     }
 

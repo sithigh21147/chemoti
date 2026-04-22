@@ -269,6 +269,10 @@
             </div>
             
             <div class="input-group" style="justify-content:flex-start; gap:10px; margin-top:5px;">
+                <input type="checkbox" id="organic-use-common" checked style="cursor:pointer;">
+                <label for="organic-use-common" style="font-size:0.9em; color:#4b5563; cursor:pointer;">慣用名で出題する（例: アセトアルデヒド）</label>
+            </div>
+            <div class="input-group" style="justify-content:flex-start; gap:10px; margin-top:5px;">
                 <input type="checkbox" id="organic-show-general" style="cursor:pointer;">
                 <label for="organic-show-general" style="font-size:0.9em; color:#4b5563; cursor:pointer;">一般式（CₙH₂ₙ₊₂など）を表示する</label>
             </div>
@@ -420,6 +424,15 @@
         "有機化学(アルデヒド・ケトン)": "飽和アルデヒド/ケトン: CₙH₂ₙO",
         "有機化学(カルボン酸・エステル)": "飽和1価カルボン酸: CₙH₂ₙO₂  エステル: CₙH₂ₙO₂"
     };
+
+    function getQName(q) {
+        const useCommon = document.getElementById('organic-use-common').checked;
+        return (useCommon || !q.name_iupac) ? q.name : q.name_iupac;
+    }
+    function getQNameParts(q) {
+        const useCommon = document.getElementById('organic-use-common').checked;
+        return (useCommon || !q.nameParts_iupac) ? q.nameParts : q.nameParts_iupac;
+    }
 
     function getGeneralFormulaHtml(group) {
         const cb = document.getElementById('organic-show-general');
@@ -687,7 +700,7 @@
          layout_c: [["[CH₃]", "-", "[CH₂]", "-", "[O]", "-", "[CH₃]"]],
          layout_f: [["", "", "[H]", "", "[H]", "", "", "", "[H]", "", ""], ["", "", "|", "", "|", "", "", "", "|", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "|", "", "", "", "|", "", ""], ["", "", "[H]", "", "[H]", "", "", "", "[H]", "", ""]]},
 
-        {id: "o52", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "ホルムアルデヒド", nameParts: ["ホルムアルデヒド"], explanation: "最も簡単な構造のアルデヒドです。水溶液はホルマリンと呼ばれます。",
+        {id: "o52", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "ホルムアルデヒド", name_iupac: "メタナール", nameParts: ["ホルムアルデヒド"], nameParts_iupac: ["メタナール"], explanation: "最も簡単な構造のアルデヒドです。水溶液はホルマリンと呼ばれます。",
          formula_c: "HCHO", formula_f: "CH₂O",
          layout_c: [
              ["", "", "O"], 
@@ -700,7 +713,7 @@
              ["[H]", "-", "[C]", "-", "[H]"]
          ]},
 
-        {id: "o53", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "アセトアルデヒド", nameParts: ["アセトアルデヒド"], explanation: "エタノールの酸化によって得られるアルデヒドです。",
+        {id: "o53", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "アセトアルデヒド", name_iupac: "エタナール", nameParts: ["アセトアルデヒド"], nameParts_iupac: ["エタナール"], explanation: "エタノールの酸化によって得られるアルデヒドです。",
          formula_c: "CH₃CHO", formula_f: "C₂H₄O",
          layout_c: [
              ["", "", "O", "", ""], 
@@ -715,7 +728,7 @@
              ["", "", "[H]", "", "", "", ""]
          ]},
 
-        {id: "o54", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "アセトン", nameParts: ["アセトン"], explanation: "最も簡単な構造のケトンです。水にも有機溶媒にもよく溶けます。",
+        {id: "o54", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "アセトン", name_iupac: "プロパン-2-オン", nameParts: ["アセトン"], nameParts_iupac: ["プロパン", "-", "2", "-", "オン"], explanation: "最も簡単な構造のケトンです。水にも有機溶媒にもよく溶けます。",
          formula_c: "CH₃COCH₃", formula_f: "C₃H₆O",
          layout_c: [
              ["", "", "O", "", ""], 
@@ -730,7 +743,7 @@
              ["", "", "[H]", "", "", "", "[H]", "", ""] 
          ]},
 
-        {id: "o55", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "ギ酸", nameParts: ["ギ酸"], explanation: "カルボン酸ですが、アルデヒド基の構造も併せ持つため還元性を示します。",
+        {id: "o55", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "ギ酸", name_iupac: "メタン酸", nameParts: ["ギ酸"], nameParts_iupac: ["メタン酸"], explanation: "カルボン酸ですが、アルデヒド基の構造も併せ持つため還元性を示します。",
          formula_c: "HCOOH", formula_f: "CH₂O₂",
          layout_c: [
              ["", "", "O", "", ""], 
@@ -743,7 +756,7 @@
              ["[H]", "-", "[C]", "-", "[O]", "-", "[H]"]
          ]},
 
-        {id: "o56", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "酢酸", nameParts: ["酢酸"], explanation: "食酢に含まれる弱酸性のカルボン酸です。",
+        {id: "o56", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "酢酸", name_iupac: "エタン酸", nameParts: ["酢酸"], nameParts_iupac: ["エタン酸"], explanation: "食酢に含まれる弱酸性のカルボン酸です。",
          formula_c: "CH₃COOH", formula_f: "C₂H₄O₂",
          layout_c: [
              ["", "", "O", "", ""], 
@@ -898,7 +911,7 @@
              ["", "", "[CH₂]", "-", "[CH₂]", "", ""]
          ]},
 
-        {id: "o34", group: "炭化水素(高2・3学期)", type: "organic", name: "エチレン", nameParts: ["エチレン"], explanation: "炭素数2のアルケンです。IUPAC名は「エテン」ですが、慣用名の「エチレン」が広く使われます。",
+        {id: "o34", group: "炭化水素(高2・3学期)", type: "organic", name: "エチレン", name_iupac: "エテン", nameParts: ["エチレン"], nameParts_iupac: ["エテン"], explanation: "炭素数2のアルケンです。IUPAC名は「エテン」ですが、慣用名の「エチレン」が広く使われます。",
          formula_c: "CH₂=CH₂", formula_f: "C₂H₄",
          layout_c: [["[CH₂]", "=", "[CH₂]"]], 
          layout_f: [
@@ -986,7 +999,7 @@
              ["", "", "[H]", "", "", "", "[H]", "", ""]
          ]},
 
-        {id: "o39", group: "炭化水素(高2・3学期)", type: "organic", name: "アセチレン", nameParts: ["アセチレン"], explanation: "炭素数2のアルキンです。IUPAC名は「エチン」ですが、慣用名の「アセチレン」が広く使われます。",
+        {id: "o39", group: "炭化水素(高2・3学期)", type: "organic", name: "アセチレン", name_iupac: "エチン", nameParts: ["アセチレン"], nameParts_iupac: ["エチン"], explanation: "炭素数2のアルキンです。IUPAC名は「エチン」ですが、慣用名の「アセチレン」が広く使われます。",
          formula_c: "CH≡CH", formula_f: "C₂H₂",
          layout_c: [["[CH]", "≡", "[CH]"]], 
          layout_f: [["[H]", "-", "[C]", "≡", "[C]", "-", "[H]"]]},
@@ -1037,49 +1050,60 @@
 
         {id: "o59", group: "有機化学(アルコール・エーテル)", type: "organic", name: "1-ブタノール", nameParts: ["1", "-", "ブタノール"], explanation: "炭素数4の第一級アルコールです。",
          formula_c: "CH₃CH₂CH₂CH₂OH", formula_f: "C₄H₁₀O",
-         layout_c: [["[CH₃]", "-", "[CH₂]", "-", "[CH₂]", "-", "[CH₂]", "-", "[OH]"]]},
+         layout_c: [["[CH₃]", "-", "[CH₂]", "-", "[CH₂]", "-", "[CH₂]", "-", "[OH]"]],
+         layout_f: [["", "", "[H]", "", "[H]", "", "[H]", "", "[H]", "", "", "", ""], ["", "", "|", "", "|", "", "|", "", "|", "", "", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "|", "", "|", "", "|", "", "|", "", "", "", ""], ["", "", "[H]", "", "[H]", "", "[H]", "", "[H]", "", "", "", ""]]},
 
         {id: "o60", group: "有機化学(アルコール・エーテル)", type: "organic", name: "2-ブタノール", nameParts: ["2", "-", "ブタノール"], explanation: "炭素数4の第二級アルコールです。酸化されると2-ブタノン（メチルエチルケトン）になります。",
          formula_c: "CH₃CH(OH)CH₂CH₃", formula_f: "C₄H₁₀O",
-         layout_c: [["", "", "[OH]", "", "", "", ""], ["", "", "|", "", "", "", ""], ["[CH₃]", "-", "[CH]", "-", "[CH₂]", "-", "[CH₃]"]]},
+         layout_c: [["", "", "[OH]", "", "", "", ""], ["", "", "|", "", "", "", ""], ["[CH₃]", "-", "[CH]", "-", "[CH₂]", "-", "[CH₃]"]],
+         layout_f: [["", "", "", "", "[H]", "", "", "", "", "", ""], ["", "", "", "", "|", "", "", "", "", "", ""], ["", "", "", "", "[O]", "", "", "", "", "", ""], ["", "", "", "", "|", "", "", "", "", "", ""], ["", "", "[H]", "", "|", "", "[H]", "", "[H]", "", ""], ["", "", "|", "", "|", "", "|", "", "|", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "", "", "|", "", "|", "", ""], ["", "", "[H]", "", "", "", "[H]", "", "[H]", "", ""]]},
 
         {id: "o61", group: "有機化学(アルコール・エーテル)", type: "organic", name: "エチレングリコール", nameParts: ["エチレングリコール"], explanation: "2価アルコール（ジオール）です。不凍液や合成繊維（ポリエステル）の原料として使われます。",
          formula_c: "HOCH₂CH₂OH", formula_f: "C₂H₆O₂",
-         layout_c: [["[HO]", "-", "[CH₂]", "-", "[CH₂]", "-", "[OH]"]]},
+         layout_c: [["[HO]", "-", "[CH₂]", "-", "[CH₂]", "-", "[OH]"]],
+         layout_f: [["", "", "", "", "[H]", "", "[H]", "", "", "", ""], ["", "", "", "", "|", "", "|", "", "", "", ""], ["[H]", "-", "[O]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "", "", "|", "", "|", "", "", "", ""], ["", "", "", "", "[H]", "", "[H]", "", "", "", ""]]},
 
         {id: "o62", group: "有機化学(アルコール・エーテル)", type: "organic", name: "グリセリン", nameParts: ["グリセリン"], explanation: "3価アルコール（トリオール）です。油脂の構成成分で、化粧品・食品など幅広く利用されます。",
          formula_c: "HOCH₂CH(OH)CH₂OH", formula_f: "C₃H₈O₃",
-         layout_c: [["", "", "[OH]", "", ""], ["", "", "|", "", ""], ["[HOCH₂]", "-", "[CH]", "-", "[CH₂OH]"]]},
+         layout_c: [["", "", "", "", "[OH]", "", "", "", ""], ["", "", "", "", "|", "", "", "", ""], ["[HO]", "-", "[CH₂]", "-", "[CH]", "-", "[CH₂]", "-", "[OH]"]],
+         layout_f: [["", "", "", "", "", "", "[H]", "", "", "", "", "", ""], ["", "", "", "", "", "", "|", "", "", "", "", "", ""], ["", "", "", "", "", "", "[O]", "", "", "", "", "", ""], ["", "", "", "", "", "", "|", "", "", "", "", "", ""], ["", "", "", "", "[H]", "", "|", "", "[H]", "", "", "", ""], ["", "", "", "", "|", "", "|", "", "|", "", "", "", ""], ["[H]", "-", "[O]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "", "", "|", "", "|", "", "|", "", "", "", ""], ["", "", "", "", "[H]", "", "[H]", "", "[H]", "", "", "", ""]]},
 
         // ── 有機化学(アルデヒド・ケトン) 追加 ────────────────────────────────
         {id: "o63", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "プロパナール", nameParts: ["プロパナール"], explanation: "炭素数3の直鎖アルデヒドです。プロピオンアルデヒドとも呼ばれます。銀鏡反応・フェーリング反応を示します。",
          formula_c: "CH₃CH₂CHO", formula_f: "C₃H₆O",
-         layout_c: [["", "", "", "", "O", "", ""], ["", "", "", "", "||", "", ""], ["[CH₃]", "-", "[CH₂]", "-", "[C]", "-", "[H]"]]},
+         layout_c: [["", "", "", "", "O", "", ""], ["", "", "", "", "||", "", ""], ["[CH₃]", "-", "[CH₂]", "-", "[C]", "-", "[H]"]],
+         layout_f: [["", "", "[H]", "", "[H]", "", "O", "", ""], ["", "", "|", "", "|", "", "||", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "|", "", "", "", ""], ["", "", "[H]", "", "[H]", "", "", "", ""]]},
 
         {id: "o64", group: "有機化学(アルデヒド・ケトン)", type: "organic", name: "2-ブタノン", nameParts: ["2", "-", "ブタノン"], explanation: "メチルエチルケトン（MEK）とも呼ばれる最も単純な非対称ケトンです。溶媒として広く使われます。",
          formula_c: "CH₃COCH₂CH₃", formula_f: "C₄H₈O",
-         layout_c: [["", "", "O", "", "", "", ""], ["", "", "||", "", "", "", ""], ["[CH₃]", "-", "[C]", "-", "[CH₂]", "-", "[CH₃]"]]},
+         layout_c: [["", "", "O", "", "", "", ""], ["", "", "||", "", "", "", ""], ["[CH₃]", "-", "[C]", "-", "[CH₂]", "-", "[CH₃]"]],
+         layout_f: [["", "", "[H]", "", "O", "", "[H]", "", "[H]", "", ""], ["", "", "|", "", "||", "", "|", "", "|", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "", "", "|", "", "|", "", ""], ["", "", "[H]", "", "", "", "[H]", "", "[H]", "", ""]]},
 
         // ── 有機化学(カルボン酸・エステル) 追加 ──────────────────────────────
         {id: "o65", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "プロパン酸", nameParts: ["プロパン酸"], explanation: "炭素数3の飽和カルボン酸です。プロピオン酸とも呼ばれます。",
          formula_c: "CH₃CH₂COOH", formula_f: "C₃H₆O₂",
-         layout_c: [["", "", "", "", "O", "", ""], ["", "", "", "", "||", "", ""], ["[CH₃]", "-", "[CH₂]", "-", "[C]", "-", "[OH]"]]},
+         layout_c: [["", "", "", "", "O", "", ""], ["", "", "", "", "||", "", ""], ["[CH₃]", "-", "[CH₂]", "-", "[C]", "-", "[OH]"]],
+         layout_f: [["", "", "[H]", "", "[H]", "", "O", "", "", "", ""], ["", "", "|", "", "|", "", "||", "", "", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"], ["", "", "|", "", "|", "", "", "", "", "", ""], ["", "", "[H]", "", "[H]", "", "", "", "", "", ""]]},
 
-        {id: "o66", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "シュウ酸", nameParts: ["シュウ酸"], explanation: "最も単純な二価カルボン酸です。還元性を示し、過マンガン酸カリウムの標定に用いられます。",
+        {id: "o66", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "シュウ酸", name_iupac: "エタン二酸", nameParts: ["シュウ酸"], nameParts_iupac: ["エタン二酸"], explanation: "最も単純な二価カルボン酸です。還元性を示し、過マンガン酸カリウムの標定に用いられます。",
          formula_c: "HOOCCOOH", formula_f: "C₂H₂O₄",
-         layout_c: [["", "", "O", "", "O", "", ""], ["", "", "||", "", "||", "", ""], ["[HO]", "-", "[C]", "-", "[C]", "-", "[OH]"]]},
+         layout_c: [["", "", "O", "", "O", "", ""], ["", "", "||", "", "||", "", ""], ["[HO]", "-", "[C]", "-", "[C]", "-", "[OH]"]],
+         layout_f: [["", "", "O", "", "O", "", "", "", ""], ["", "", "||", "", "||", "", "", "", ""], ["[H]", "-", "[O]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[H]"]]},
 
-        {id: "o67", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "マレイン酸", nameParts: ["マレイン酸"], explanation: "シス-ブテン二酸。二つのカルボキシ基が二重結合の同じ側にあります。加熱で無水マレイン酸になります。",
+        {id: "o67", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "マレイン酸", name_iupac: "シス-2-ブテン二酸", nameParts: ["マレイン酸"], nameParts_iupac: ["シス", "-", "2", "-", "ブテン二酸"], explanation: "シス-ブテン二酸。二つのカルボキシ基が二重結合の同じ側にあります。加熱で無水マレイン酸になります。",
          formula_c: "HOOCCH=CHCOOH(シス)", formula_f: "C₄H₄O₄(シス)",
-         layout_c: [["[COOH]", "", "", "", "", "", "[COOH]"], ["", "\\", "", "", "", "/", ""], ["", "", "[C]", "=", "[C]", "", ""], ["", "/", "", "", "", "\\", ""], ["[H]", "", "", "", "", "", "[H]"]]},
+         layout_c: [["[COOH]", "", "", "", "", "", "[COOH]"], ["", "\\", "", "", "", "/", ""], ["", "", "[C]", "=", "[C]", "", ""], ["", "/", "", "", "", "\\", ""], ["[H]", "", "", "", "", "", "[H]"]],
+         layout_f: [["[COOH]", "", "", "", "", "", "[COOH]"], ["", "\\", "", "", "", "/", ""], ["", "", "[C]", "=", "[C]", "", ""], ["", "/", "", "", "", "\\", ""], ["[H]", "", "", "", "", "", "[H]"]]},
 
-        {id: "o68", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "フマル酸", nameParts: ["フマル酸"], explanation: "トランス-ブテン二酸。二つのカルボキシ基が二重結合の反対側にあります。マレイン酸の幾何異性体です。",
+        {id: "o68", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "フマル酸", name_iupac: "トランス-2-ブテン二酸", nameParts: ["フマル酸"], nameParts_iupac: ["トランス", "-", "2", "-", "ブテン二酸"], explanation: "トランス-ブテン二酸。二つのカルボキシ基が二重結合の反対側にあります。マレイン酸の幾何異性体です。",
          formula_c: "HOOCCH=CHCOOH(トランス)", formula_f: "C₄H₄O₄(トランス)",
-         layout_c: [["[COOH]", "", "", "", "", "", "[H]"], ["", "\\", "", "", "", "/", ""], ["", "", "[C]", "=", "[C]", "", ""], ["", "/", "", "", "", "\\", ""], ["[H]", "", "", "", "", "", "[COOH]"]]},
+         layout_c: [["[COOH]", "", "", "", "", "", "[H]"], ["", "\\", "", "", "", "/", ""], ["", "", "[C]", "=", "[C]", "", ""], ["", "/", "", "", "", "\\", ""], ["[H]", "", "", "", "", "", "[COOH]"]],
+         layout_f: [["[COOH]", "", "", "", "", "", "[H]"], ["", "\\", "", "", "", "/", ""], ["", "", "[C]", "=", "[C]", "", ""], ["", "/", "", "", "", "\\", ""], ["[H]", "", "", "", "", "", "[COOH]"]]},
 
         {id: "o69", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "酢酸メチル", nameParts: ["酢酸", "メチル"], explanation: "最も単純なエステルの1つです。酢酸とメタノールのエステル化で生成します。",
          formula_c: "CH₃COOCH₃", formula_f: "C₃H₆O₂",
-         layout_c: [["", "", "O", "", "", "", ""], ["", "", "||", "", "", "", ""], ["[CH₃]", "-", "[C]", "-", "[O]", "-", "[CH₃]"]]},
+         layout_c: [["", "", "O", "", "", "", ""], ["", "", "||", "", "", "", ""], ["[CH₃]", "-", "[C]", "-", "[O]", "-", "[CH₃]"]],
+         layout_f: [["", "", "[H]", "", "O", "", "", "", "[H]", "", ""], ["", "", "|", "", "||", "", "", "", "|", "", ""], ["[H]", "-", "[C]", "-", "[C]", "-", "[O]", "-", "[C]", "-", "[H]"], ["", "", "|", "", "", "", "", "", "|", "", ""], ["", "", "[H]", "", "", "", "", "", "[H]", "", ""]]},
 
         {id: "o70", group: "有機化学(カルボン酸・エステル)", type: "organic", name: "酢酸エチル", nameParts: ["酢酸", "エチル"], explanation: "酢酸とエタノールのエステル化で生成する果実のような香りのエステルです。塗料や接着剤の溶媒に使われます。",
          formula_c: "CH₃COOC₂H₅", formula_f: "C₄H₈O₂",
@@ -1289,6 +1313,8 @@
         document.getElementById('current-num').textContent = currentIndex + 1;
         document.getElementById('result-msg').style.display = 'none';
         document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('question-header').classList.remove('hidden');
+        document.getElementById('q-id-display').classList.remove('hidden');
         
         ['mode1-area', 'mode2-area', 'mode3-area', 'mode5-area', 'mode9-area', 'fc-area'].forEach(id => document.getElementById(id).classList.add('hidden'));
 
@@ -1401,7 +1427,7 @@
         organicAnswers = [];
         
         if (organicDir === "name-to-struct") {
-            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em; font-weight:bold;">${q.name}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>${getGeneralFormulaHtml(q.group)}`;
+            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em; font-weight:bold;">${getQName(q)}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>${getGeneralFormulaHtml(q.group)}`;
             
             organicAnswers = extractAnswersFromLayout(layout);
             document.getElementById('organic-build-display').innerHTML = renderStructTable(layout, "input", organicAnswers);
@@ -1413,7 +1439,7 @@
             renderOrgKeys(pool, false);
             
         } else if (organicDir === "name-to-formula") {
-            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em; font-weight:bold;">${q.name}</div><div style="font-size:0.8em; color:#666;">の分子式（または示性式）は？</div>${getGeneralFormulaHtml(q.group)}`;
+            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em; font-weight:bold;">${getQName(q)}</div><div style="font-size:0.8em; color:#666;">の分子式（または示性式）は？</div>${getGeneralFormulaHtml(q.group)}`;
             let parts = splitFormula(formulaStr);
             parts.forEach((p) => { organicAnswers.push(p); });
             
@@ -1434,13 +1460,13 @@
             document.getElementById('q-desc').innerHTML = `${renderStructTable(layout, "answer", ansArr)}<div style="font-size:0.8em; color:#666; margin-top:5px;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
             
             let inputsHtml = "";
-            q.nameParts.forEach((part, idx) => {
+            getQNameParts(q).forEach((part, idx) => {
                 organicAnswers.push(part);
                 inputsHtml += `<span class="org-box-large" data-idx="${idx}"></span>`;
             });
             document.getElementById('organic-build-display').innerHTML = `<div style="display:flex; justify-content:center; flex-wrap:wrap; margin-top:10px;">${inputsHtml}</div>`;
             
-            let words = q.nameParts.filter(p => !p.match(/^[0-9\-\,]+$/));
+            let words = getQNameParts(q).filter(p => !p.match(/^[0-9\-\,]+$/));
             let pool = [...new Set(words)];
             let dummies = ["メチル", "エチル", "プロパン", "ブタン", "ペンタン", "シス", "トランス", "シクロ"];
             dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
@@ -1451,15 +1477,15 @@
             document.getElementById('q-desc').innerHTML = `<div style="font-size:1.8em; font-family:serif; font-weight:bold;">${formulaStr}</div><div style="font-size:0.8em; color:#666;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
             
             let inputsHtml = "";
-            q.nameParts.forEach((part, idx) => {
+            getQNameParts(q).forEach((part, idx) => {
                 organicAnswers.push(part);
                 inputsHtml += `<span class="org-box-large" data-idx="${idx}"></span>`;
             });
             document.getElementById('organic-build-display').innerHTML = `<div style="display:flex; justify-content:center; flex-wrap:wrap; margin-top:10px;">${inputsHtml}</div>`;
             
-            let words = q.nameParts.filter(p => !p.match(/^[0-9\-\,]+$/));
+            let words = getQNameParts(q).filter(p => !p.match(/^[0-9\-\,]+$/));
             let pool = [...new Set(words)];
-            let dummies = ["メチル", "エチル", "プロパン", "ブタン", "ペンタン", "シス", "トランス", "シクロ", "モノ", "ジ", "トリ", "テトラ"];
+            let dummies = ["メチル", "エチル", "プロパン", "ブタン", "ペンタン", "シス", "トランス", "シクロ", "モノ", "ジ", "トリ", "テトラ", "酸", "オン", "ナール"];
             dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
             pool = shuffleArray(pool).slice(0, 8);
             renderOrgKeys(pool, true);
@@ -1530,7 +1556,16 @@
         if (inputs.length === 0) return;
 
         if (v === 'BS') {
-            inputs[currentOrgInputIdx].textContent = "";
+            if (inputs[currentOrgInputIdx].textContent.trim() !== "") {
+                // 現在マスにテキストがあればクリア
+                inputs[currentOrgInputIdx].textContent = "";
+            } else if (currentOrgInputIdx > 0) {
+                // 空なら前のマスに戻ってクリア
+                inputs[currentOrgInputIdx].classList.remove('active-input');
+                currentOrgInputIdx--;
+                inputs[currentOrgInputIdx].classList.add('active-input');
+                inputs[currentOrgInputIdx].textContent = "";
+            }
         } else if (v === 'CLEAR') {
             inputs.forEach(i => i.textContent = "");
             inputs.forEach(i => i.classList.remove('active-input'));
@@ -1565,7 +1600,7 @@
         } else if (organicDir === "name-to-formula") {
             ansHtml = `<span style="font-size:1.5em; font-family:serif; font-weight:bold; color:var(--primary);">${isCond ? q.formula_c : q.formula_f}</span>`;
         } else {
-            ansHtml = `<span style="font-size:1.2em; font-weight:bold; color:var(--wrong);">${q.name}</span>`;
+            ansHtml = `<span style="font-size:1.2em; font-weight:bold; color:var(--wrong);">${getQName(q)}</span>`;
         }
 
         const m = document.getElementById('result-msg'); 
@@ -1598,16 +1633,31 @@
         const formulaStr = isCond ? q.formula_c : q.formula_f;
 
         if (organicDir === "name-to-struct") {
-            header.innerHTML = `<div style="font-size:1.3em;">${q.name}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>${getGeneralFormulaHtml(q.group)}`;
+            header.innerHTML = `<div style="font-size:1.3em;">${getQName(q)}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>${getGeneralFormulaHtml(q.group)}`;
         } else if (organicDir === "name-to-formula") {
-            header.innerHTML = `<div style="font-size:1.3em;">${q.name}</div><div style="font-size:0.8em; color:#666;">の分子式（示性式）は？</div>${getGeneralFormulaHtml(q.group)}`;
+            header.innerHTML = `<div style="font-size:1.3em;">${getQName(q)}</div><div style="font-size:0.8em; color:#666;">の分子式（示性式）は？</div>${getGeneralFormulaHtml(q.group)}`;
         } else if (organicDir === "struct-to-name") {
             header.innerHTML = `${renderStructTable(layout, "answer", ansArr)}<div style="font-size:0.8em; color:#666; margin-top:5px;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
         } else if (organicDir === "formula-to-name") {
             header.innerHTML = `<div style="font-family:serif; font-size:1.5em; font-weight:bold;">${formulaStr}</div><div style="font-size:0.8em; color:#666;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
         }
 
-        const wrongPool = rawData.filter(d => d.type === "organic" && activeOrganicGroups.includes(d.group) && d.id !== q.id && d.group !== "有機化学(数詞)");
+        // formula/layoutが存在する問題のみ選択肢候補に
+        const wrongPool = rawData.filter(d => {
+            if (!d.type || d.type !== "organic") return false;
+            if (!activeOrganicGroups.includes(d.group)) return false;
+            if (d.id === q.id) return false;
+            if (d.group === "有機化学(数詞)") return false;
+            if (organicDir === "name-to-struct" || organicDir === "struct-to-name") {
+                const layout = document.getElementById('organic-condensed').checked ? d.layout_c : (d.layout_f || d.layout_c);
+                return !!layout;
+            }
+            if (organicDir === "name-to-formula" || organicDir === "formula-to-name") {
+                const isCond = document.getElementById('organic-condensed').checked;
+                return !!(isCond ? d.formula_c : d.formula_f);
+            }
+            return true;
+        });
         const shuffledWrongPool = shuffleArray(wrongPool);
         const wrongChoices = shuffledWrongPool.slice(0, 3);
         const choices = shuffleArray([q, ...wrongChoices]);
@@ -1627,8 +1677,8 @@
                 displayText = `<span style="font-family:serif; font-weight:bold; font-size:1.2em;">${c_formula}</span>`;
                 correctText = formulaStr;
             } else if (organicDir === "struct-to-name" || organicDir === "formula-to-name") {
-                displayText = c.name;
-                correctText = q.name;
+                displayText = getQName(c);
+                correctText = getQName(q);
             }
             container.appendChild(createOption(displayText, c.id === q.id, correctText));
         });
@@ -1658,7 +1708,7 @@
             const gfHtml = getGeneralFormulaHtml(q.group);
 
             if (organicDir === "name-to-struct" || organicDir === "name-to-formula") {
-                front.innerHTML = `<div style="font-size:1.8em; font-weight:bold;">${q.name}</div><div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>${gfHtml}`;
+                front.innerHTML = `<div style="font-size:1.8em; font-weight:bold;">${getQName(q)}</div><div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>${gfHtml}`;
             } else if (organicDir === "struct-to-name") {
                 front.innerHTML = `${renderStructTable(layout, "answer", ansArr)}<div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>${gfHtml}`;
             } else if (organicDir === "formula-to-name") {
@@ -1666,7 +1716,7 @@
             }
         } else {
             qHeader.classList.remove('hidden');
-            document.getElementById('q-id-display').remove('hidden');
+            document.getElementById('q-id-display').classList.remove('hidden');
             document.getElementById('q-id').textContent = q.id;
             document.getElementById('q-group').textContent = `[${q.group}]`;
             document.getElementById('q-desc').textContent = q.desc;
@@ -1704,7 +1754,7 @@
             } else if (organicDir === "name-to-formula") {
                 content.innerHTML = `<div style="font-size:2em; font-family:serif; font-weight:bold; color:var(--primary);">${formulaStr}</div>${gfHtml}`;
             } else {
-                content.innerHTML = `<div style="font-size:2em; font-weight:bold;">${q.name}</div>${gfHtml}`;
+                content.innerHTML = `<div style="font-size:2em; font-weight:bold;">${getQName(q)}</div>${gfHtml}`;
             }
             
             if (q.explanation) {
@@ -1776,9 +1826,12 @@
         container.classList.remove('hidden');
         container.innerHTML = '';
         
-        const wrongPool = rawData.filter(d => typeof d.id === 'number' && d.id !== q.id);
-        const shuffledWrongPool = shuffleArray(wrongPool);
-        const wrongChoices = shuffledWrongPool.slice(0, 3);
+        // 同グループ優先で誤答3択を生成
+        let sameGroup = rawData.filter(d => typeof d.id === 'number' && d.id !== q.id && d.group === q.group);
+        let otherGroup = rawData.filter(d => typeof d.id === 'number' && d.id !== q.id && d.group !== q.group);
+        let wrongPool = shuffleArray(sameGroup);
+        if (wrongPool.length < 3) wrongPool = wrongPool.concat(shuffleArray(otherGroup));
+        const wrongChoices = wrongPool.slice(0, 3);
         const choices = shuffleArray([q, ...wrongChoices]);
         
         choices.forEach(c => container.appendChild(createOption(c.eq, c.id === q.id, q.eq)));
@@ -1850,6 +1903,9 @@
             const b = document.createElement('button'); 
             b.className='key-btn'; b.textContent=n; b.onclick=()=>mode2Keypad(n); m2k.appendChild(b); 
         });
+        // 最初の入力欄を自動フォーカス
+        const firstInp = container.querySelector('.coeff-input');
+        if (firstInp) { selectedCoeffInput = firstInp; firstInp.classList.add('active-input'); }
     }
 
     function mode2Keypad(v) { 
@@ -1862,7 +1918,10 @@
     function checkCoeffAnswer() {
         const inps = document.querySelectorAll('.coeff-input'); 
         let ok = true;
-        inps.forEach((inp, i) => { if(parseInt(inp.value||1) !== coeffAnswers[i]) ok = false; });
+        inps.forEach((inp, i) => {
+            const val = inp.value.trim() === '' ? 0 : parseInt(inp.value);
+            if (val !== coeffAnswers[i]) ok = false;
+        });
         showResultMsgMode23HTML(ok, quizList[currentIndex].eq);
     }
 
@@ -1881,7 +1940,7 @@
         const kn = document.getElementById('kb-numbers'); kn.innerHTML = ''; 
         [1,2,3,4,5,6,7,8,9].forEach(n => { 
             const b = document.createElement('button'); 
-            b.className='key-btn'; b.textContent=n; b.onclick=()=>mode3In(n); kn.appendChild(b); 
+            b.className='key-btn'; b.textContent=n; b.onclick=()=>mode3In(String(n)); kn.appendChild(b); 
         });
         
         const ko = document.getElementById('kb-ops'); 
@@ -1897,8 +1956,8 @@
 
     function mode3In(v) { 
         if(v==='BS') mode3InputBuffer.pop(); 
-        else mode3InputBuffer.push(v); 
-        document.getElementById('build-display').textContent = mode3InputBuffer.join(" "); 
+        else mode3InputBuffer.push(String(v)); 
+        document.getElementById('build-display').textContent = mode3InputBuffer.join(""); 
     }
 
     function checkBuildAnswer() { 
@@ -1970,27 +2029,27 @@
                     if (organicDir === "name-to-struct") {
                         item.innerHTML = `
                             <div style="font-size:0.8em; margin-bottom:5px;">${q.group}</div>
-                            <div style="font-weight:bold;">${q.name}</div>
+                            <div style="font-weight:bold;">${getQName(q)}</div>
                             <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解:</div>
                             ${structHtml}
                         `;
                     } else if (organicDir === "name-to-formula") {
                         item.innerHTML = `
                             <div style="font-size:0.8em; margin-bottom:5px;">${q.group}</div>
-                            <div style="font-weight:bold;">${q.name}</div>
+                            <div style="font-weight:bold;">${getQName(q)}</div>
                             <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解: <span style="font-family:serif; font-size:1.2em;">${formulaStr}</span></div>
                         `;
                     } else if (organicDir === "struct-to-name") {
                         item.innerHTML = `
                             <div style="font-size:0.8em; margin-bottom:5px;">${q.group}</div>
                             ${structHtml}
-                            <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解: ${q.name}</div>
+                            <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解: ${getQName(q)}</div>
                         `;
                     } else if (organicDir === "formula-to-name") {
                         item.innerHTML = `
                             <div style="font-size:0.8em; margin-bottom:5px;">${q.group}</div>
                             <div style="font-family:serif; font-weight:bold; font-size:1.5em; margin-top:5px;">${formulaStr}</div>
-                            <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解: ${q.name}</div>
+                            <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解: ${getQName(q)}</div>
                         `;
                     }
                 } else {

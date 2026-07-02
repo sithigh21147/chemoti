@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>有機化学暗記マスター</title>
+    <style>
+        :root {
+            --primary: #10b981;
+            --secondary: #059669;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --text: #1f2937;
+            --correct: #10b981;
+            --wrong: #ef4444;
+            --accent: #f59e0b;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            padding-bottom: 40px;
+            box-sizing: border-box;
+        }
+
+        h1, h2, h3 { text-align: center; margin: 0; color: var(--secondary); }
+        h1 { font-size: 1.5rem; }
+
+        .settings-group {
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9fafb;
+            margin-bottom: 10px;
+        }
+
+        .input-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+        .group-filter-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .group-chip {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #fff;
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid #d1d5db;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        select { padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 16px; max-width: 60%; }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+            transition: background 0.2s;
+            font-weight: bold;
+        }
+        .btn:hover { background-color: var(--secondary); }
+        .btn-outline { background-color: transparent; border: 2px solid var(--secondary); color: var(--secondary); }
+        .btn-retry { background-color: var(--accent); }
+
+        .fc-display {
+            padding: 40px 10px;
+            text-align: center;
+            background-color: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            box-sizing: border-box;
+            cursor: pointer;
+            overflow-x: auto;
+        }
+
+        .options-grid { display: flex; flex-direction: column; gap: 10px; }
+        .option-btn { background-color: white; border: 2px solid #e5e7eb; padding: 12px; border-radius: 8px; text-align: left; cursor: pointer; transition: all 0.2s; font-size: 0.9em; overflow-x: auto; }
+
+        /* 絶対崩れないテーブル構造式用CSS */
+        .struct-wrapper {
+            background-color: transparent;
+            display: inline-block;
+            margin: 0 auto;
+            overflow-x: auto;
+            max-width: 100%;
+            pointer-events: none;
+        }
+        .struct-table {
+            border-collapse: collapse;
+            margin: 0 auto;
+            line-height: 1;
+        }
+        .struct-table td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 0;
+            height: 1.5em;
+            font-size: 1.3em;
+            font-weight: bold;
+            white-space: nowrap;
+            min-width: 1.8em;
+        }
+        .org-box {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 1ch;
+            height: 1.2em;
+            border: none;
+            border-bottom: 2px solid #d1d5db;
+            cursor: pointer;
+            background-color: transparent;
+            padding: 0 0.1em;
+            margin: 0;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-weight: bold;
+            color: var(--secondary);
+            box-sizing: content-box;
+            pointer-events: auto;
+        }
+        .org-box.active-input {
+            background-color: #ecfdf5;
+            border-bottom: 2px solid var(--secondary);
+        }
+        .struct-ans-text {
+            color: var(--secondary);
+            font-weight: bold;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .org-box-large {
+            display: inline-block;
+            min-width: 3ch;
+            height: 1.8em;
+            line-height: 1.8em;
+            text-align: center;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #fff;
+            padding: 0 4px;
+            margin: 2px;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-weight: bold;
+            color: var(--secondary);
+            box-sizing: border-box;
+            pointer-events: auto;
+        }
+        .org-box-large.active-input {
+            border-color: var(--secondary);
+            background-color: #ecfdf5;
+        }
+
+        .keypad-area { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .keypad-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+        .key-btn { background-color: white; border: 1px solid #d1d5db; padding: 10px 0; border-radius: 6px; font-size: 1.2em; cursor: pointer; flex: 1 0 21%; max-width: 23%; font-weight: bold; }
+        .key-op { background-color: #d1fae5; color: #065f46; }
+        .key-control { background-color: #f3f4f6; font-size: 0.9em; flex: 1 0 40%; max-width: 48%; }
+
+        .result-message { text-align: center; font-weight: bold; padding: 15px; border-radius: 6px; margin-top: 15px; display: none; white-space: pre-wrap; }
+        .correct { background-color: #d1fae5; color: #065f46; }
+        .wrong { background-color: #fee2e2; color: #991b1b; }
+
+        .explanation-box {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: #fff;
+            border-left: 4px solid var(--secondary);
+            text-align: left;
+            font-size: 0.9em;
+            color: #4b5563;
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            font-weight: normal;
+        }
+        .explanation-box-title {
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        .hidden { display: none !important; }
+        .btn-home { position: absolute; top: 15px; right: 15px; background-color: #9ca3af; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; width: auto; z-index: 10;}
+
+        .progress { text-align: center; font-size: 0.9em; color: #6b7280; margin-top: 25px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div id="screen-home">
+        <h1>🌿 有機化学暗記マスター</h1>
+
+        <div class="settings-group" style="border-left: 5px solid #6b7280; margin-top: 15px;">
+            <h3>⚙️ 共通設定</h3>
+            <div class="input-group" style="justify-content:flex-start; gap:10px; margin-top:10px;">
+                <input type="checkbox" id="is-random" checked style="width:20px; height:20px; cursor:pointer;">
+                <label for="is-random" style="font-weight:bold; cursor:pointer;">問題順をランダムに出題する</label>
+            </div>
+            <div style="font-size:0.8em; color:#666; margin-top:5px; margin-left:30px;">※キーボード操作に対応しています</div>
+        </div>
+
+        <div class="settings-group" style="border-left: 5px solid #10b981; margin-top: 15px;">
+            <h3>🌿 有機化学（構造・名称）設定</h3>
+            <div id="organic-group-filter-container" class="group-filter-area" style="margin-bottom:10px;"></div>
+
+            <div class="input-group" style="margin-top:15px;">
+                <label>出題方向</label>
+                <select id="organic-dir">
+                    <option value="name-to-struct">名称 → 構造式</option>
+                    <option value="name-to-formula">名称 → 分子式(示性式)</option>
+                    <option value="struct-to-name">構造式 → 名称</option>
+                    <option value="formula-to-name">分子式(示性式) → 名称</option>
+                </select>
+            </div>
+
+            <div class="input-group" style="margin-top:5px;">
+                <label style="font-size:0.9em; color:#4b5563;">慣用名の使用</label>
+                <select id="organic-use-common" style="font-size:0.85em;">
+                    <option value="all">すべて慣用名を使用</option>
+                    <option value="common" selected>一般的な慣用名のみ</option>
+                    <option value="none">一切使用しない（IUPAC名）</option>
+                </select>
+            </div>
+            <div class="input-group" style="justify-content:flex-start; gap:10px; margin-top:5px;">
+                <input type="checkbox" id="organic-show-general" style="cursor:pointer;">
+                <label for="organic-show-general" style="font-size:0.9em; color:#4b5563; cursor:pointer;">一般式（CₙH₂ₙ₊₂など）を表示する</label>
+            </div>
+
+            <div class="input-group" style="justify-content:flex-start; gap:10px;">
+                <input type="checkbox" id="organic-condensed" style="cursor:pointer;">
+                <label for="organic-condensed" style="font-size:0.9em; color:#4b5563; cursor:pointer;">原子団（CH₃等）をまとめて表示する</label>
+            </div>
+
+            <button class="btn" style="background-color:#10b981;" onclick="startQuiz(7)">モード7：4択クイズ</button>
+            <button class="btn" style="background-color:#059669;" onclick="startQuiz(8)">モード8：フラッシュカード</button>
+            <button class="btn btn-outline" onclick="startQuiz(9)">モード9：式・名称の組み立て</button>
+        </div>
+
+        <button class="btn" style="background-color: #6b7280; margin-top: 20px;" onclick="showDataList()">📖 収録データ一覧</button>
+    </div>
+
+    <div id="screen-play" class="hidden">
+        <button class="btn-home" onclick="goHomeConfirm()">× 中断</button>
+        <div class="progress">問 <span id="current-num">1</span> / <span id="total-num">10</span></div>
+
+        <div id="question-header" class="settings-group" style="text-align:center; margin-top:10px;">
+            <div style="font-size:0.8em; color:#666; margin-bottom:5px;" id="q-id-display">ID: <span id="q-id"></span> <span id="q-group" style="margin-left:10px; color:#059669;"></span></div>
+            <div id="q-desc" style="font-weight:bold; font-size:1.1em;"></div>
+        </div>
+
+        <div id="mode1-area" class="options-grid hidden"></div>
+
+        <div id="mode9-area" class="hidden">
+            <div id="organic-build-display" style="text-align:center; margin-bottom:15px; background-color:#f8fafc; border:2px dashed #cbd5e1; border-radius:8px; padding:15px 5px; overflow-x:auto;"></div>
+            <div class="keypad-area">
+                <div class="keypad-row" id="org-kb-1"></div>
+                <div class="keypad-row" id="org-kb-2"></div>
+                <div class="keypad-row">
+                    <button class="key-btn key-control" onclick="mode9In('BS')">1字消す</button>
+                    <button class="key-btn key-control" onclick="mode9In('CLEAR')">全クリア</button>
+                </div>
+            </div>
+            <button class="btn" style="background-color:#10b981; margin-top:15px;" onclick="checkOrganicBuildAnswer()">回答する</button>
+        </div>
+
+        <div id="fc-area" class="hidden">
+            <div id="fc-front" onclick="showFcAnswer()">
+                <div class="fc-display">
+                    <div id="fc-front-content">タップして答えを表示</div>
+                </div>
+            </div>
+            <div id="fc-back" class="hidden">
+                <div class="fc-display" id="fc-answer-content" onclick="hideFcAnswer()" title="タップして問題に戻る"></div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="btn" style="background-color:var(--wrong); flex:1;" onclick="gradeFc(false)">NG</button>
+                    <button class="btn" style="background-color:var(--correct); flex:1;" onclick="gradeFc(true)">OK!</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="result-msg" class="result-message"></div>
+        <button id="next-btn" class="btn hidden" onclick="nextQuestion()">次へ</button>
+    </div>
+
+    <div id="screen-result" class="hidden">
+        <h2 style="margin-top:40px;">結果発表</h2>
+        <div style="text-align: center; font-size: 2.5em; margin: 20px 0;"><span id="score-display">0</span> / <span id="score-total">0</span></div>
+        <p style="text-align: center; margin-bottom:20px;" id="score-comment"></p>
+
+        <div id="retry-section" class="hidden">
+            <button class="btn btn-retry" onclick="retryWrongQuestions()">間違えた問題のみ再挑戦</button>
+            <div style="margin-top: 15px;" id="wrong-list-container"></div>
+        </div>
+
+        <button class="btn" style="margin-top:20px;" onclick="goHome()">ホームに戻る</button>
+    </div>
+
+    <div id="screen-list" class="hidden">
+        <button class="btn-home" onclick="goHome()">× 閉じる</button>
+        <h2 style="margin-top: 40px;">データ一覧</h2>
+        <div id="full-list-container"></div>
+    </div>
+</div>
+
+<script>
+const rawData = [{"id":"o1","group":"有機化学(数詞)","type":"organic","name":"数詞: 1","nameParts":["モノ"],"explanation":"ギリシャ語由来の接頭辞で「1つ」を意味します。"},{"id":"o2","group":"有機化学(数詞)","type":"organic","name":"数詞: 2","nameParts":["ジ"],"explanation":"ギリシャ語由来の接頭辞で「2つ」を意味します。"},{"id":"o3","group":"有機化学(数詞)","type":"organic","name":"数詞: 3","nameParts":["トリ"],"explanation":"ギリシャ語由来の接頭辞で「3つ」を意味します。"},{"id":"o4","group":"有機化学(数詞)","type":"organic","name":"数詞: 4","nameParts":["テトラ"],"explanation":"ギリシャ語由来の接頭辞で「4つ」を意味します。"},{"id":"o5","group":"有機化学(数詞)","type":"organic","name":"数詞: 5","nameParts":["ペンタ"],"explanation":"ギリシャ語由来の接頭辞で「5つ」を意味します。"},{"id":"o6","group":"有機化学(数詞)","type":"organic","name":"数詞: 6","nameParts":["ヘキサ"],"explanation":"ギリシャ語由来の接頭辞で「6つ」を意味します。"},{"id":"o7","group":"有機化学(数詞)","type":"organic","name":"数詞: 7","nameParts":["ヘプタ"],"explanation":"ギリシャ語由来の接頭辞で「7つ」を意味します。"},{"id":"o8","group":"有機化学(数詞)","type":"organic","name":"数詞: 8","nameParts":["オクタ"],"explanation":"ギリシャ語由来の接頭辞で「8つ」を意味します。"},{"id":"o9","group":"有機化学(数詞)","type":"organic","name":"数詞: 9","nameParts":["ノナ"],"explanation":"ギリシャ語由来の接頭辞で「9つ」を意味します。"},{"id":"o10","group":"有機化学(数詞)","type":"organic","name":"数詞: 10","nameParts":["デカ"],"explanation":"ギリシャ語由来の接頭辞で「10」を意味します。"},{"id":"o11","group":"有機化学(基)","type":"organic","name":"ヒドロキシ基","nameParts":["ヒドロキシ基"],"explanation":"アルコールやフェノール類などに含まれる官能基です。親水性を示します。","formula_c":"-OH","formula_f":"-OH","layout_c":[["-","[OH]"]],"layout_f":[["-","[O]","-","[H]"]]},{"id":"o12","group":"有機化学(基)","type":"organic","name":"ホルミル基","nameParts":["ホルミル基"],"explanation":"アルデヒドに含まれる官能基です。還元性を示し、銀鏡反応やフェーリング液の還元を起こします。","formula_c":"-CHO","formula_f":"-CHO","layout_c":[["","O"],["","||"],["-","[CH]"]],"layout_f":[["","O","",""],["","||","",""],["-","[C]","-","[H]"]]},{"id":"o13","group":"有機化学(基)","type":"organic","name":"カルボニル基","nameParts":["カルボニル基"],"explanation":"ケトンなどに含まれる官能基です（ケトン基とも呼ばれます）。","formula_c":"-CO-","formula_f":"-CO-","layout_c":[["","O",""],["","||",""],["-","[C]","-"]],"layout_f":[["","O",""],["","||",""],["-","[C]","-"]]},{"id":"o14","group":"有機化学(基)","type":"organic","name":"カルボキシ基","nameParts":["カルボキシ基"],"explanation":"カルボン酸に含まれる官能基で、水溶液中で電離して弱酸性を示します。","formula_c":"-COOH","formula_f":"-COOH","layout_c":[["","O","",""],["","||","",""],["-","[C]","-","[OH]"]],"layout_f":[["","O","","","",""],["","||","","","",""],["-","[C]","-","[O]","-","[H]"]]},{"id":"o15","group":"有機化学(基)","type":"organic","name":"アミノ基","nameParts":["アミノ基"],"explanation":"アミンなどに含まれる塩基性の官能基です。アンモニアの水素原子を置換した構造です。","formula_c":"-NH₂","formula_f":"-NH₂","layout_c":[["-","[NH₂]"]],"layout_f":[["","[H]"],["","|"],["-","[N]","-","[H]"]]},{"id":"o16","group":"有機化学(基)","type":"organic","name":"ニトロ基","nameParts":["ニトロ基"],"explanation":"ニトロ化合物に含まれる官能基です。芳香環に導入されやすい性質があります。","formula_c":"-NO₂","formula_f":"-NO₂","layout_c":[["-","[NO₂]"]],"layout_f":[["-","[NO₂]"]]},{"id":"o17","group":"有機化学(基)","type":"organic","name":"スルホ基","nameParts":["スルホ基"],"explanation":"スルホン酸に含まれる官能基で、強酸性を示します。","formula_c":"-SO₃H","formula_f":"-SO₃H","layout_c":[["-","[SO₃H]"]],"layout_f":[["-","[SO₃H]"]]},{"id":"o18","group":"有機化学(基)","type":"organic","name":"エーテル結合","nameParts":["エーテル結合"],"explanation":"2つの炭化水素基が酸素原子を介して結合した構造です。化学的に比較的安定です。","formula_c":"-O-","formula_f":"-O-","layout_c":[["-","[O]","-"]],"layout_f":[["-","[O]","-"]]},{"id":"o19","group":"有機化学(基)","type":"organic","name":"エステル結合","nameParts":["エステル結合"],"explanation":"カルボン酸とアルコールから水分子がとれて縮合した結合です。果実のような芳香を持つものが多いです。","formula_c":"-COO-","formula_f":"-COO-","layout_c":[["","O","","",""],["","||","","",""],["-","[C]","-","[O]","-"]],"layout_f":[["","O","","",""],["","||","","",""],["-","[C]","-","[O]","-"]]},{"id":"o20","group":"有機化学(基)","type":"organic","name":"アミド結合","nameParts":["アミド結合"],"explanation":"カルボン酸とアミンから水分子がとれて縮合した結合です。タンパク質のペプチド結合もこれの一種です。","formula_c":"-CONH-","formula_f":"-CONH-","layout_c":[["","O","","",""],["","||","","",""],["-","[C]","-","[NH]","-"]],"layout_f":[["","O","","",""],["","||","","",""],["-","[C]","-","[N]","-"],["","","","|",""],["","","","[H]",""]]},{"id":"o43","group":"有機化学(基)","type":"organic","name":"メチル基","nameParts":["メチル基"],"explanation":"メタン(CH₄)から水素原子が1つ取れたアルキル基です。","formula_c":"-CH₃","formula_f":"-CH₃","layout_c":[["-","[CH₃]"]],"layout_f":[["","[H]","",""],["","|","",""],["-","[C]","-","[H]"],["","|","",""],["","[H]","",""]]},{"id":"o44","group":"有機化学(基)","type":"organic","name":"エチル基","nameParts":["エチル基"],"explanation":"エタン(C₂H₆)から水素原子が1つ取れたアルキル基です。","formula_c":"-CH₂CH₃","formula_f":"-C₂H₅","layout_c":[["-","[CH₂]","-","[CH₃]"]],"layout_f":[["","[H]","","[H]",""],["","|","","|",""],["-","[C]","-","[C]","-","[H]"],["","|","","|",""],["","[H]","","[H]",""]]},{"id":"o45","group":"有機化学(基)","type":"organic","name":"プロピル基","nameParts":["プロピル基"],"explanation":"プロパン(C₃H₈)の端の水素原子が1つ取れたアルキル基です。","formula_c":"-CH₂CH₂CH₃","formula_f":"-C₃H₇","layout_c":[["-","[CH₂]","-","[CH₂]","-","[CH₃]"]],"layout_f":[["","[H]","","[H]","","[H]",""],["","|","","|","","|",""],["-","[C]","-","[C]","-","[C]","-","[H]"],["","|","","|","","|",""],["","[H]","","[H]","","[H]",""]]},{"id":"o46","group":"有機化学(基)","type":"organic","name":"イソプロピル基","nameParts":["イソプロピル基"],"explanation":"プロパン(C₃H₈)の中央の水素原子が1つ取れたアルキル基です。枝分かれ構造を持ちます。","formula_c":"-CH(CH₃)₂","formula_f":"-C₃H₇","layout_c":[["","[CH₃]","",""],["","|","",""],["-","[CH]","-","[CH₃]"]],"layout_f":[["","[CH₃]","",""],["","|","",""],["-","[CH]","-","[CH₃]"]]},{"id":"o47","group":"有機化学(アルコール・エーテル)","type":"organic","name":"エタノール","commonName":true,"name_iupac":"エチルアルコール","nameParts":["エタノール"],"explanation":"炭素数2のアルコールです。酒類の主成分です。","formula_c":"CH₃CH₂OH","formula_f":"C₂H₆O","layout_c":[["[CH₃]","-","[CH₂]","-","[OH]"]],"layout_f":[["","","[H]","","[H]","","","",""],["","","|","","|","","","",""],["[H]","-","[C]","-","[C]","-","[O]","-","[H]"],["","","|","","|","","","",""],["","","[H]","","[H]","","","",""]]},{"id":"o48","group":"有機化学(アルコール・エーテル)","type":"organic","name":"ジメチルエーテル","commonName":false,"name_iupac":"メトキシメタン","nameParts":["ジメチルエーテル"],"explanation":"最も単純なエーテルで、エタノールの構造異性体です。","formula_c":"CH₃OCH₃","formula_f":"C₂H₆O","layout_c":[["[CH₃]","-","[O]","-","[CH₃]"]],"layout_f":[["","","[H]","","","","[H]","",""],["","","|","","","","|","",""],["[H]","-","[C]","-","[O]","-","[C]","-","[H]"],["","","|","","","","|","",""],["","","[H]","","","","[H]","",""]]},{"id":"o49","group":"有機化学(アルコール・エーテル)","type":"organic","name":"1-プロパノール","commonName":false,"name_iupac":"n-プロパノール","nameParts":["1","-","プロパノール"],"explanation":"プロパンの端の炭素にヒドロキシ基が結合した第一級アルコールです。","formula_c":"CH₃CH₂CH₂OH","formula_f":"C₃H₈O","layout_c":[["[CH₃]","-","[CH₂]","-","[CH₂]","-","[OH]"]],"layout_f":[["","","[H]","","[H]","","[H]","","","",""],["","","|","","|","","|","","","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[O]","-","[H]"],["","","|","","|","","|","","","",""],["","","[H]","","[H]","","[H]","","","",""]]},{"id":"o50","group":"有機化学(アルコール・エーテル)","type":"organic","name":"2-プロパノール","commonName":false,"name_iupac":"イソプロパノール","nameParts":["2","-","プロパノール"],"explanation":"プロパンの中央の炭素にヒドロキシ基が結合した第二級アルコールです。酸化されるとアセトンになります。","formula_c":"CH₃CH(OH)CH₃","formula_f":"C₃H₈O","layout_c":[["","","[OH]","",""],["","","|","",""],["[CH₃]","-","[CH]","-","[CH₃]"]],"layout_f":[["","","","","[H]","","","",""],["","","","","|","","","",""],["","","","","[O]","","","",""],["","","","","|","","","",""],["","","[H]","","|","","[H]","",""],["","","|","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","|","","|","",""],["","","[H]","","[H]","","[H]","",""]]},{"id":"o51","group":"有機化学(アルコール・エーテル)","type":"organic","name":"エチルメチルエーテル","commonName":false,"name_iupac":"メトキシエタン","nameParts":["エチルメチルエーテル"],"explanation":"エチル基とメチル基がエーテル結合した物質です。1-プロパノールや2-プロパノールの構造異性体です。","formula_c":"CH₃CH₂OCH₃","formula_f":"C₃H₈O","layout_c":[["[CH₃]","-","[CH₂]","-","[O]","-","[CH₃]"]],"layout_f":[["","","[H]","","[H]","","","","[H]","",""],["","","|","","|","","","","|","",""],["[H]","-","[C]","-","[C]","-","[O]","-","[C]","-","[H]"],["","","|","","|","","","","|","",""],["","","[H]","","[H]","","","","[H]","",""]]},{"id":"o52","group":"有機化学(アルデヒド・ケトン)","type":"organic","name":"ホルムアルデヒド","commonName":true,"name_iupac":"メタナール","nameParts":["ホルムアルデヒド"],"nameParts_iupac":["メタナール"],"explanation":"最も簡単な構造のアルデヒドです。水溶液はホルマリンと呼ばれます。","formula_c":"HCHO","formula_f":"CH₂O","layout_c":[["","","O"],["","","||"],["[H]","-","[C]","-","[H]"]],"layout_f":[["","","O","",""],["","","||","",""],["[H]","-","[C]","-","[H]"]]},{"id":"o53","group":"有機化学(アルデヒド・ケトン)","type":"organic","name":"アセトアルデヒド","commonName":true,"name_iupac":"エタナール","nameParts":["アセトアルデヒド"],"nameParts_iupac":["エタナール"],"explanation":"エタノールの酸化によって得られるアルデヒドです。","formula_c":"CH₃CHO","formula_f":"C₂H₄O","layout_c":[["","","O","",""],["","","||","",""],["[CH₃]","-","[C]","-","[H]"]],"layout_f":[["","","[H]","","O","",""],["","","|","","||","",""],["[H]","-","[C]","-","[C]","-","[H]"],["","","|","","","",""],["","","[H]","","","",""]]},{"id":"o54","group":"有機化学(アルデヒド・ケトン)","type":"organic","name":"アセトン","commonName":true,"name_iupac":"プロパン-2-オン","nameParts":["アセトン"],"nameParts_iupac":["プロパン","-","2","-","オン"],"explanation":"最も簡単な構造のケトンです。水にも有機溶媒にもよく溶けます。","formula_c":"CH₃COCH₃","formula_f":"C₃H₆O","layout_c":[["","","O","",""],["","","||","",""],["[CH₃]","-","[C]","-","[CH₃]"]],"layout_f":[["","","[H]","","O","","[H]","",""],["","","|","","||","","|","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","","","|","",""],["","","[H]","","","","[H]","",""]]},{"id":"o55","group":"有機化学(カルボン酸・エステル)","type":"organic","name":"ギ酸","commonName":true,"name_iupac":"メタン酸","nameParts":["ギ酸"],"nameParts_iupac":["メタン酸"],"explanation":"カルボン酸ですが、アルデヒド基の構造も併せ持つため還元性を示します。","formula_c":"HCOOH","formula_f":"CH₂O₂","layout_c":[["","","O","",""],["","","||","",""],["[H]","-","[C]","-","[OH]"]],"layout_f":[["","","O","","","",""],["","","||","","","",""],["[H]","-","[C]","-","[O]","-","[H]"]]},{"id":"o56","group":"有機化学(カルボン酸・エステル)","type":"organic","name":"酢酸","commonName":true,"name_iupac":"エタン酸","nameParts":["酢酸"],"nameParts_iupac":["エタン酸"],"explanation":"食酢に含まれる弱酸性のカルボン酸です。","formula_c":"CH₃COOH","formula_f":"C₂H₄O₂","layout_c":[["","","O","",""],["","","||","",""],["[CH₃]","-","[C]","-","[OH]"]],"layout_f":[["","","[H]","","O","","","",""],["","","|","","||","","","",""],["[H]","-","[C]","-","[C]","-","[O]","-","[H]"],["","","|","","","","","",""],["","","[H]","","","","","",""]]},{"id":"o21","group":"炭化水素(高2・3学期)","type":"organic","name":"メタン","nameParts":["メタン"],"explanation":"炭素数1のアルカンです。天然ガスの主成分です。","formula_c":"CH₄","formula_f":"CH₄","layout_c":[["[CH₄]"]],"layout_f":[["","","[H]","",""],["","","|","",""],["[H]","-","[C]","-","[H]"],["","","|","",""],["","","[H]","",""]]},{"id":"o22","group":"炭化水素(高2・3学期)","type":"organic","name":"エタン","nameParts":["エタン"],"explanation":"炭素数2のアルカンです。すべての結合が単結合です。","formula_c":"CH₃CH₃","formula_f":"C₂H₆","layout_c":[["[CH₃]","-","[CH₃]"]],"layout_f":[["","","[H]","","[H]","",""],["","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[H]"],["","","|","","|","",""],["","","[H]","","[H]","",""]]},{"id":"o23","group":"炭化水素(高2・3学期)","type":"organic","name":"プロパン","nameParts":["プロパン"],"explanation":"炭素数3のアルカンです。LPガス（プロパンガス）の主成分として利用されます。","formula_c":"CH₃CH₂CH₃","formula_f":"C₃H₈","layout_c":[["[CH₃]","-","[CH₂]","-","[CH₃]"]],"layout_f":[["","","[H]","","[H]","","[H]","",""],["","","|","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","|","","|","",""],["","","[H]","","[H]","","[H]","",""]]},{"id":"o24","group":"炭化水素(高2・3学期)","type":"organic","name":"ブタン","nameParts":["ブタン"],"explanation":"炭素数4の直鎖アルカンです。名称の頭にノルマル(n-)をつけてn-ブタンと呼ばれることもあります。","formula_c":"CH₃CH₂CH₂CH₃","formula_f":"C₄H₁₀","layout_c":[["[CH₃]","-","[CH₂]","-","[CH₂]","-","[CH₃]"]],"layout_f":[["","","[H]","","[H]","","[H]","","[H]","",""],["","","|","","|","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","|","","|","","|","",""],["","","[H]","","[H]","","[H]","","[H]","",""]]},{"id":"o25","group":"炭化水素(高2・3学期)","type":"organic","name":"2-メチルプロパン","nameParts":["2","-","メチル","プロパン"],"explanation":"最も長い炭素鎖（主鎖）がプロパン（炭素数3）で、端から数えて2番目の炭素にメチル基が結合しています。ブタンの構造異性体です。","formula_c":"CH₃CH(CH₃)CH₃","formula_f":"C₄H₁₀","layout_c":[["","","[CH₃]","",""],["","","|","",""],["[CH₃]","-","[CH]","-","[CH₃]"]],"layout_f":[["","","","","[H]","","","",""],["","","","","|","","","",""],["","","[H]","-","[C]","-","[H]","",""],["","","","","|","","","",""],["","","[H]","","|","","[H]","",""],["","","|","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","|","","|","",""],["","","[H]","","[H]","","[H]","",""]]},{"id":"o26","group":"炭化水素(高2・3学期)","type":"organic","name":"ペンタン","nameParts":["ペンタン"],"explanation":"炭素数5の直鎖アルカンです。常温常圧で液体となる最初の直鎖アルカンです。","formula_c":"CH₃(CH₂)₃CH₃","formula_f":"C₅H₁₂","layout_c":[["[CH₃]","-","[CH₂]","-","[CH₂]","-","[CH₂]","-","[CH₃]"]],"layout_f":[["","","[H]","","[H]","","[H]","","[H]","","[H]","",""],["","","|","","|","","|","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","|","","|","","|","","|","",""],["","","[H]","","[H]","","[H]","","[H]","","[H]","",""]]},{"id":"o27","group":"炭化水素(高2・3学期)","type":"organic","name":"2-メチルブタン","nameParts":["2","-","メチル","ブタン"],"explanation":"主鎖がブタン（炭素数4）で、端から2番目の炭素にメチル基が結合しています。置換基の番号が小さくなる方から数えます。","formula_c":"CH₃CH(CH₃)CH₂CH₃","formula_f":"C₅H₁₂","layout_c":[["","","[CH₃]","","","",""],["","","|","","","",""],["[CH₃]","-","[CH]","-","[CH₂]","-","[CH₃]"]],"layout_f":[["","","","","[H]","","","","","",""],["","","","","|","","","","","",""],["","","[H]","-","[C]","-","[H]","","","",""],["","","","","|","","","","","",""],["","","[H]","","|","","[H]","","[H]","",""],["","","|","","|","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","|","","|","","|","",""],["","","[H]","","[H]","","[H]","","[H]","",""]]},{"id":"o28","group":"炭化水素(高2・3学期)","type":"organic","name":"2,2-ジメチルプロパン","nameParts":["2",",","2","-","ジメチル","プロパン"],"explanation":"主鎖がプロパン（炭素数3）で、中央の2番目の炭素にメチル基が2つ（ジ）結合しています。球状に近い構造のため沸点が低いのが特徴です。","formula_c":"C(CH₃)₄","formula_f":"C₅H₁₂","layout_c":[["","","[CH₃]","",""],["","","|","",""],["[CH₃]","-","[C]","-","[CH₃]"],["","","|","",""],["","","[CH₃]","",""]],"layout_f":[["","","","","[H]","","","",""],["","","","","|","","","",""],["","","[H]","-","[C]","-","[H]","",""],["","","","","|","","","",""],["","","[H]","","|","","[H]","",""],["","","|","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","|","","|","",""],["","","[H]","","|","","[H]","",""],["","","","","|","","","",""],["","","[H]","-","[C]","-","[H]","",""],["","","","","|","","","",""],["","","","","[H]","","","",""]]},{"id":"o30","group":"炭化水素(高2・3学期)","type":"organic","name":"シクロプロパン","nameParts":["シクロ","プロパン"],"explanation":"炭素数3のプロパンが環状になっているため、頭に「シクロ」をつけます。","formula_c":"C₃H₆(環状)","formula_f":"C₃H₆(環状)","layout_c":[["","","[CH₂]","",""],["","/","","\\",""],["[CH₂]","-","-","-","[CH₂]"]],"layout_f":[["","","[CH₂]","",""],["","/","","\\",""],["[CH₂]","-","-","-","[CH₂]"]]},{"id":"o31","group":"炭化水素(高2・3学期)","type":"organic","name":"シクロブタン","nameParts":["シクロ","ブタン"],"explanation":"炭素数4のブタンが環状になっているため、頭に「シクロ」をつけます。","formula_c":"C₄H₈(環状)","formula_f":"C₄H₈(環状)","layout_c":[["[CH₂]","-","-","-","[CH₂]"],["|","","","","|"],["[CH₂]","-","-","-","[CH₂]"]],"layout_f":[["[CH₂]","-","-","-","[CH₂]"],["|","","","","|"],["[CH₂]","-","-","-","[CH₂]"]]},{"id":"o32","group":"炭化水素(高2・3学期)","type":"organic","name":"シクロペンタン","nameParts":["シクロ","ペンタン"],"explanation":"炭素数5のペンタンが環状になっているため、頭に「シクロ」をつけます。","formula_c":"C₅H₁₀(環状)","formula_f":"C₅H₁₀(環状)","layout_c":[["","","[CH₂]","",""],["","/","","\\",""],["[CH₂]","","","","[CH₂]"],["|","","","","|"],["[CH₂]","-","-","-","[CH₂]"]],"layout_f":[["","","[CH₂]","",""],["","/","","\\",""],["[CH₂]","","","","[CH₂]"],["|","","","","|"],["[CH₂]","-","-","-","[CH₂]"]]},{"id":"o33","group":"炭化水素(高2・3学期)","type":"organic","name":"シクロヘキサン","nameParts":["シクロ","ヘキサン"],"explanation":"炭素数6のヘキサンが環状になっているため、頭に「シクロ」をつけます。","formula_c":"C₆H₁₂(環状)","formula_f":"C₆H₁₂(環状)","layout_c":[["","","[CH₂]","-","[CH₂]","",""],["","/","","","","\\",""],["[CH₂]","","","","","","[CH₂]"],["","\\","","","","/",""],["","","[CH₂]","-","[CH₂]","",""]],"layout_f":[["","","[CH₂]","-","[CH₂]","",""],["","/","","","","\\",""],["[CH₂]","","","","","","[CH₂]"],["","\\","","","","/",""],["","","[CH₂]","-","[CH₂]","",""]]},{"id":"o34","group":"炭化水素(高2・3学期)","type":"organic","name":"エチレン","commonName":true,"name_iupac":"エテン","nameParts":["エチレン"],"nameParts_iupac":["エテン"],"explanation":"炭素数2のアルケンです。IUPAC名は「エテン」ですが、慣用名の「エチレン」が広く使われます。","formula_c":"CH₂=CH₂","formula_f":"C₂H₄","layout_c":[["[CH₂]","=","[CH₂]"]],"layout_f":[["","","","[H]","","[H]",""],["","","","|","","|",""],["","","","[C]","=","[C]",""],["","","","|","","|",""],["","","","[H]","","[H]",""]]},{"id":"o35","group":"炭化水素(高2・3学期)","type":"organic","name":"プロペン","nameParts":["プロペン"],"explanation":"炭素数3のアルケンです。プロピレンとも呼ばれます。シクロプロパンの構造異性体です。","formula_c":"CH₂=CHCH₃","formula_f":"C₃H₆","layout_c":[["[CH₂]","=","[CH]","-","[CH₃]"]],"layout_f":[["","","[H]","","","","[H]","",""],["","","|","","","","|","",""],["","","[C]","=","[C]","-","[C]","-","[H]"],["","","|","","|","","|","",""],["","","[H]","","[H]","","[H]","",""]]},{"id":"o36","group":"炭化水素(高2・3学期)","type":"organic","name":"1-ブテン","nameParts":["1","-","ブテン"],"explanation":"炭素数4のアルケンで、端の1番目の炭素から二重結合が始まります。番号が小さくなるように数えます。","formula_c":"CH₂=CHCH₂CH₃","formula_f":"C₄H₈","layout_c":[["[CH₂]","=","[CH]","-","[CH₂]","-","[CH₃]"]],"layout_f":[["","","[H]","","","","[H]","","[H]","",""],["","","|","","","","|","","|","",""],["","","[C]","=","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","|","","|","","|","",""],["","","[H]","","[H]","","[H]","","[H]","",""]]},{"id":"o37_c","group":"炭化水素(高2・3学期)","type":"organic","name":"シス-2-ブテン","nameParts":["シス","-","2","-","ブテン"],"explanation":"2番目から二重結合が始まり、主鎖（メチル基）が二重結合の軸に対して同じ側（シス型）に配置されています。","formula_c":"CH₃CH=CHCH₃(シス)","formula_f":"C₄H₈(シス)","layout_c":[["[CH₃]","","","","","","[CH₃]"],["","\\","","","","/",""],["","","[C]","=","[C]","",""],["","/","","","","\\",""],["[H]","","","","","","[H]"]],"layout_f":[["[CH₃]","","","","","","[CH₃]"],["","\\","","","","/",""],["","","[C]","=","[C]","",""],["","/","","","","\\",""],["[H]","","","","","","[H]"]]},{"id":"o37_t","group":"炭化水素(高2・3学期)","type":"organic","name":"トランス-2-ブテン","nameParts":["トランス","-","2","-","ブテン"],"explanation":"2番目から二重結合が始まり、主鎖（メチル基）が二重結合の軸に対して反対側（トランス型）に配置されています。","formula_c":"CH₃CH=CHCH₃(トランス)","formula_f":"C₄H₈(トランス)","layout_c":[["[CH₃]","","","","","","[H]"],["","\\","","","","/",""],["","","[C]","=","[C]","",""],["","/","","","","\\",""],["[H]","","","","","","[CH₃]"]],"layout_f":[["[CH₃]","","","","","","[H]"],["","\\","","","","/",""],["","","[C]","=","[C]","",""],["","/","","","","\\",""],["[H]","","","","","","[CH₃]"]]},{"id":"o38","group":"炭化水素(高2・3学期)","type":"organic","name":"2-メチルプロペン","nameParts":["2","-","メチル","プロペン"],"explanation":"主鎖はプロペン（炭素数3）で、2番目の炭素にメチル基が結合しています。慣用名としてイソブテンとも呼ばれます。","formula_c":"CH₂=C(CH₃)₂","formula_f":"C₄H₈","layout_c":[["","","[CH₃]","",""],["","","|","",""],["[CH₂]","=","[C]","-","[CH₃]"]],"layout_f":[["","","","","[H]","","","",""],["","","","","|","","","",""],["","","[H]","-","[C]","-","[H]","",""],["","","","","|","","","",""],["","","[H]","","|","","[H]","",""],["","","|","","|","","|","",""],["","","[C]","=","[C]","-","[C]","-","[H]"],["","","|","","","","|","",""],["","","[H]","","","","[H]","",""]]},{"id":"o39","group":"炭化水素(高2・3学期)","type":"organic","name":"アセチレン","commonName":true,"name_iupac":"エチン","nameParts":["アセチレン"],"nameParts_iupac":["エチン"],"explanation":"炭素数2のアルキンです。IUPAC名は「エチン」ですが、慣用名の「アセチレン」が広く使われます。","formula_c":"CH≡CH","formula_f":"C₂H₂","layout_c":[["[CH]","≡","[CH]"]],"layout_f":[["[H]","-","[C]","≡","[C]","-","[H]"]]},{"id":"o40","group":"炭化水素(高2・3学期)","type":"organic","name":"プロピン","nameParts":["プロピン"],"explanation":"炭素数3のアルキンです。三重結合を含む最も長い炭素鎖を主鎖とします。","formula_c":"CH≡CCH₃","formula_f":"C₃H₄","layout_c":[["[CH]","≡","[C]","-","[CH₃]"]],"layout_f":[["","","","","","","[H]","",""],["","","","","","","|","",""],["[H]","-","[C]","≡","[C]","-","[C]","-","[H]"],["","","","","","","|","",""],["","","","","","","[H]","",""]]},{"id":"o41","group":"炭化水素(高2・3学期)","type":"organic","name":"1-ブチン","nameParts":["1","-","ブチン"],"explanation":"炭素数4のアルキンで、端の1番目の炭素から三重結合が始まります。","formula_c":"CH≡CCH₂CH₃","formula_f":"C₄H₆","layout_c":[["[CH]","≡","[C]","-","[CH₂]","-","[CH₃]"]],"layout_f":[["","","","","","","[H]","","[H]","",""],["","","","","","","|","","|","",""],["[H]","-","[C]","≡","[C]","-","[C]","-","[C]","-","[H]"],["","","","","","","|","","|","",""],["","","","","","","[H]","","[H]","",""]]},{"id":"o42","group":"炭化水素(高2・3学期)","type":"organic","name":"2-ブチン","nameParts":["2","-","ブチン"],"explanation":"炭素数4のアルキンで、2番目の炭素から三重結合が始まります。直線構造のためシス・トランス異性体はありません。","formula_c":"CH₃C≡CCH₃","formula_f":"C₄H₆","layout_c":[["[CH₃]","-","[C]","≡","[C]","-","[CH₃]"]],"layout_f":[["","","[H]","","","","","","[H]","",""],["","","|","","","","","","|","",""],["[H]","-","[C]","-","[C]","≡","[C]","-","[C]","-","[H]"],["","","|","","","","","","|","",""],["","","[H]","","","","","","[H]","",""]]},{"id":"o57","group":"有機化学(アルコール・エーテル)","type":"organic","name":"メタノール","commonName":true,"name_iupac":"メチルアルコール","nameParts":["メタノール"],"explanation":"炭素数1の最も簡単なアルコールです。猛毒で飲用不可。工業的にはCOとH₂から合成されます。","formula_c":"CH₃OH","formula_f":"CH₄O","layout_c":[["[CH₃]","-","[OH]"]],"layout_f":[["","","[H]","","","",""],["","","|","","","",""],["[H]","-","[C]","-","[O]","-","[H]"],["","","|","","","",""],["","","[H]","","","",""]]},{"id":"o58","group":"有機化学(アルコール・エーテル)","type":"organic","name":"ジエチルエーテル","commonName":true,"name_iupac":"エトキシエタン","nameParts":["ジエチルエーテル"],"explanation":"最も代表的なエーテルです。麻酔作用があり、極めて引火しやすい。","formula_c":"C₂H₅OC₂H₅","formula_f":"C₄H₁₀O","layout_c":[["[CH₃]","-","[CH₂]","-","[O]","-","[CH₂]","-","[CH₃]"]],"layout_f":[["","","[H]","","[H]","","","","[H]","","[H]","",""],["","","|","","|","","","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[O]","-","[C]","-","[C]","-","[H]"],["","","|","","|","","","","|","","|","",""],["","","[H]","","[H]","","","","[H]","","[H]","",""]]},{"id":"o59","group":"有機化学(アルコール・エーテル)","type":"organic","name":"1-ブタノール","commonName":false,"name_iupac":"n-ブタノール","nameParts":["1","-","ブタノール"],"explanation":"炭素数4の第一級アルコールです。","formula_c":"CH₃CH₂CH₂CH₂OH","formula_f":"C₄H₁₀O","layout_c":[["[CH₃]","-","[CH₂]","-","[CH₂]","-","[CH₂]","-","[OH]"]],"layout_f":[["","","[H]","","[H]","","[H]","","[H]","","","",""],["","","|","","|","","|","","|","","","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[C]","-","[O]","-","[H]"],["","","|","","|","","|","","|","","","",""],["","","[H]","","[H]","","[H]","","[H]","","","",""]]},{"id":"o60","group":"有機化学(アルコール・エーテル)","type":"organic","name":"2-ブタノール","commonName":false,"name_iupac":"sec-ブタノール","nameParts":["2","-","ブタノール"],"explanation":"炭素数4の第二級アルコールです。酸化されると2-ブタノン（メチルエチルケトン）になります。","formula_c":"CH₃CH(OH)CH₂CH₃","formula_f":"C₄H₁₀O","layout_c":[["","","[OH]","","","",""],["","","|","","","",""],["[CH₃]","-","[CH]","-","[CH₂]","-","[CH₃]"]],"layout_f":[["","","","","[H]","","","","","",""],["","","","","|","","","","","",""],["","","","","[O]","","","","","",""],["","","","","|","","","","","",""],["","","[H]","","|","","[H]","","[H]","",""],["","","|","","|","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","","","|","","|","",""],["","","[H]","","","","[H]","","[H]","",""]]},{"id":"o61","group":"有機化学(アルコール・エーテル)","type":"organic","name":"エチレングリコール","commonName":true,"name_iupac":"エタン-1,2-ジオール","nameParts":["エチレングリコール"],"explanation":"2価アルコール（ジオール）です。不凍液や合成繊維（ポリエステル）の原料として使われます。","formula_c":"HOCH₂CH₂OH","formula_f":"C₂H₆O₂","layout_c":[["[HO]","-","[CH₂]","-","[CH₂]","-","[OH]"]],"layout_f":[["","","","","[H]","","[H]","","","",""],["","","","","|","","|","","","",""],["[H]","-","[O]","-","[C]","-","[C]","-","[O]","-","[H]"],["","","","","|","","|","","","",""],["","","","","[H]","","[H]","","","",""]]},{"id":"o62","group":"有機化学(アルコール・エーテル)","type":"organic","name":"グリセリン","commonName":true,"name_iupac":"プロパン-1,2,3-トリオール","nameParts":["グリセリン"],"explanation":"3価アルコール（トリオール）です。油脂の構成成分で、化粧品・食品など幅広く利用されます。","formula_c":"HOCH₂CH(OH)CH₂OH","formula_f":"C₃H₈O₃","layout_c":[["","","","","[OH]","","","",""],["","","","","|","","","",""],["[HO]","-","[CH₂]","-","[CH]","-","[CH₂]","-","[OH]"]],"layout_f":[["","","","","","","[H]","","","","","",""],["","","","","","","|","","","","","",""],["","","","","","","[O]","","","","","",""],["","","","","","","|","","","","","",""],["","","","","[H]","","|","","[H]","","","",""],["","","","","|","","|","","|","","","",""],["[H]","-","[O]","-","[C]","-","[C]","-","[C]","-","[O]","-","[H]"],["","","","","|","","|","","|","","","",""],["","","","","[H]","","[H]","","[H]","","","",""]]},{"id":"o63","group":"有機化学(アルデヒド・ケトン)","type":"organic","name":"プロパナール","commonName":false,"name_iupac":"プロピオンアルデヒド","nameParts":["プロパナール"],"explanation":"炭素数3の直鎖アルデヒドです。プロピオンアルデヒドとも呼ばれます。銀鏡反応・フェーリング反応を示します。","formula_c":"CH₃CH₂CHO","formula_f":"C₃H₆O","layout_c":[["","","","","O","",""],["","","","","||","",""],["[CH₃]","-","[CH₂]","-","[C]","-","[H]"]],"layout_f":[["","","[H]","","[H]","","O","",""],["","","|","","|","","||","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","|","","","",""],["","","[H]","","[H]","","","",""]]},{"id":"o64","group":"有機化学(アルデヒド・ケトン)","type":"organic","name":"2-ブタノン","commonName":false,"name_iupac":"メチルエチルケトン","nameParts":["2","-","ブタノン"],"explanation":"メチルエチルケトン（MEK）とも呼ばれる最も単純な非対称ケトンです。溶媒として広く使われます。","formula_c":"CH₃COCH₂CH₃","formula_f":"C₄H₈O","layout_c":[["","","O","","","",""],["","","||","","","",""],["[CH₃]","-","[C]","-","[CH₂]","-","[CH₃]"]],"layout_f":[["","","[H]","","O","","[H]","","[H]","",""],["","","|","","||","","|","","|","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[C]","-","[H]"],["","","|","","","","|","","|","",""],["","","[H]","","","","[H]","","[H]","",""]]},{"id":"o65","group":"有機化学(カルボン酸・エステル)","type":"organic","name":"プロパン酸","commonName":false,"name_iupac":"プロピオン酸","nameParts":["プロパン酸"],"explanation":"炭素数3の飽和カルボン酸です。プロピオン酸とも呼ばれます。","formula_c":"CH₃CH₂COOH","formula_f":"C₃H₆O₂","layout_c":[["","","","","O","",""],["","","","","||","",""],["[CH₃]","-","[CH₂]","-","[C]","-","[OH]"]],"layout_f":[["","","[H]","","[H]","","O","","","",""],["","","|","","|","","||","","","",""],["[H]","-","[C]","-","[C]","-","[C]","-","[O]","-","[H]"],["","","|","","|","","","","","",""],["","","[H]","","[H]","","","","","",""]]},{"id":"o66","group":"有機化学(カルボン酸・エステル)","type":"organic","name":"シュウ酸","commonName":true,"name_iupac":"エタン二酸","nameParts":["シュウ酸"],"nameParts_iupac":["エタン二酸"],"explanation":"最も単純な二価カルボン酸です。還元性を示し、過マンガン酸カリウムの標定に用いられます。","formula_c":"HOOCCOOH","formula_f":"C₂H₂O₄","layout_c":[["","","O","","O","",""],["","","||","","||","",""],["[HO]","-","[C]","-","[C]","-","[OH]"]],"layout_f":[["","","O","","O","","","",""],["","","||","","||","","","",""],["[H]","-","[O]","-","[C]","-","[C]","-","[O]","-","[H]"]]},{"id":"o67","group":"有機化学(カルボン酸・エステル)","type":"organic","name":"マレイン酸","commonName":true,"name_iupac":"シス-2-ブテン二酸","nameParts":["マレイン酸"],"nameParts_iupac":["シス","-","2","-","ブテン二酸"],"explanation":"シス-ブテン二酸。二つのカルボキシ基が二重結合の同じ側にあります。加熱で無水マレイン酸になります。","formula_c":"HOOCCH=CHCOOH(シス)","formula_f":"C₄H₄O₄(シス)","layout_c":[["[COOH]","","","","","","[COOH]"],["","\\","","","","/",""],["","","[C]","=","[C]","",""],["","/","","","","\\",""],["[H]","","","","","","[H]"]],"layout_f":[["[COOH]","","","","","","[COOH]"],["","\\","","","","/",""],["","","[C]","=","[C]","",""],["","/","","","","\\",""],["[H]","","","","","","[H]"]]},{"id":"o68","group":"有機化学(カルボン酸・エステル)","type":"organic","name":"フマル酸","commonName":true,"name_iupac":"トランス-2-ブテン二酸","nameParts":["フマル酸"],"nameParts_iupac":["トランス","-","2","-","ブテン二酸"],"explanation":"トランス-ブテン二酸。二つのカルボキシ基が二重結合の反対側にあります。マレイン酸の幾何異性体です。","formula_c":"HOOCCH=CHCOOH(トランス)","formula_f":"C₄H₄O₄(トランス)","layout_c":[["[COOH]","","","","","","[H]"],["","\\","","","","/",""],["","","[C]","=","[C]","",""],["","/","","","","\\",""],["[H]","","","","","","[COOH]"]],"layout_f":[["[COOH]","","","","","","[H]"],["","\\","","","","/",""],["","","[C]","=","[C]","",""],["","/","","","","\\",""],["[H]","","","","","","[COOH]"]]},{"id":"o69","group":"有機化学(カルボン酸・エステル)","type":"organic","name":"酢酸メチル","nameParts":["酢酸","メチル"],"explanation":"最も単純なエステルの1つです。酢酸とメタノールのエステル化で生成します。","formula_c":"CH₃COOCH₃","formula_f":"C₃H₆O₂","layout_c":[["","","O","","","",""],["","","||","","","",""],["[CH₃]","-","[C]","-","[O]","-","[CH₃]"]],"layout_f":[["","","[H]","","O","","","","[H]","",""],["","","|","","||","","","","|","",""],["[H]","-","[C]","-","[C]","-","[O]","-","[C]","-","[H]"],["","","|","","","","","","|","",""],["","","[H]","","","","","","[H]","",""]]},{"id":"o70","group":"有機化学(カルボン酸・エステル)","type":"organic","name":"酢酸エチル","nameParts":["酢酸","エチル"],"explanation":"酢酸とエタノールのエステル化で生成する果実のような香りのエステルです。塗料や接着剤の溶媒に使われます。","formula_c":"CH₃COOC₂H₅","formula_f":"C₄H₈O₂","layout_c":[["","","O","","","","","",""],["","","||","","","","","",""],["[CH₃]","-","[C]","-","[O]","-","[CH₂]","-","[CH₃]"]]},{"id":"o71","group":"有機化学(芳香族炭化水素)","type":"organic","name":"ベンゼン","name_iupac":"ベンゼン","commonName":true,"nameParts":["ベンゼン"],"explanation":"最も基本的な芳香族炭化水素。6つのC–H結合と3つの二重結合が共鳴した安定な平面分子です。特有の置換反応（ニトロ化・スルホン化・ハロゲン化）を示します。","formula_c":"C₆H₆","formula_f":"C₆H₆","layout_c":[["","","HC","=","CH","",""],["","HC","","","","CH",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","CH","",""]],"layout_f":[["","","HC","=","CH","",""],["","HC","","","","CH",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","CH","",""]]},{"id":"o72","group":"有機化学(芳香族炭化水素)","type":"organic","name":"トルエン","name_iupac":"メチルベンゼン","commonName":true,"nameParts":["トルエン"],"nameParts_iupac":["メチルベンゼン"],"explanation":"ベンゼン環にメチル基が1つ置換した化合物。酸化するとベンズアルデヒドを経て安息香酸になります。","formula_c":"C₆H₅CH₃","formula_f":"C₇H₈","layout_c":[["","","HC","=","CH","",""],["","HC","","","","CH",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","C","",""],["","","","","|","",""],["","","","","[CH₃]","",""]],"layout_f":[["","","HC","=","CH","",""],["","HC","","","","CH",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","C","",""],["","","","","|","",""],["","","","","[CH₃]","",""]]},{"id":"o73","group":"有機化学(芳香族炭化水素)","type":"organic","name":"o-キシレン","name_iupac":"1,2-ジメチルベンゼン","commonName":true,"nameParts":["o","-","キシレン"],"nameParts_iupac":["1,2","-","ジメチルベンゼン"],"explanation":"オルト位（隣接位）に2つのメチル基をもつキシレン。3種のキシレン（o-, m-, p-）の中で沸点が最も低い。","formula_c":"C₆H₄(CH₃)₂","formula_f":"C₈H₁₀","layout_c":[["","","HC","=","C","","[CH₃]"],["","HC","","","","C",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","CH","",""],["[CH₃]","","","","","",""]],"layout_f":[["","","HC","=","C","","[CH₃]"],["","HC","","","","C",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","CH","",""],["[CH₃]","","","","","",""]]},{"id":"o74","group":"有機化学(芳香族炭化水素)","type":"organic","name":"m-キシレン","name_iupac":"1,3-ジメチルベンゼン","commonName":true,"nameParts":["m","-","キシレン"],"nameParts_iupac":["1,3","-","ジメチルベンゼン"],"explanation":"メタ位（1,3位）に2つのメチル基をもつキシレン。3種の中で沸点が中間。","formula_c":"C₆H₄(CH₃)₂","formula_f":"C₈H₁₀","layout_c":[["","","HC","=","CH","",""],["","HC","","","","C","[CH₃]"],["||","","","","","",""],["","HC","","","","C","[CH₃]"],["","","HC","=","CH","",""]],"layout_f":[["","","HC","=","CH","",""],["","HC","","","","C","[CH₃]"],["||","","","","","",""],["","HC","","","","C","[CH₃]"],["","","HC","=","CH","",""]]},{"id":"o75","group":"有機化学(芳香族炭化水素)","type":"organic","name":"p-キシレン","name_iupac":"1,4-ジメチルベンゼン","commonName":true,"nameParts":["p","-","キシレン"],"nameParts_iupac":["1,4","-","ジメチルベンゼン"],"explanation":"パラ位（1,4位）に2つのメチル基をもつキシレン。酸化するとテレフタル酸（PET原料）になります。3種の中で最も沸点が高く融点も高い。","formula_c":"C₆H₄(CH₃)₂","formula_f":"C₈H₁₀","layout_c":[["[CH₃]","","","","","",""],["|","","","","","",""],["","","C","=","CH","",""],["","HC","","","","CH",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","C","=","CH","",""],["|","","","","","",""],["[CH₃]","","","","","",""]],"layout_f":[["[CH₃]","","","","","",""],["|","","","","","",""],["","","C","=","CH","",""],["","HC","","","","CH",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","C","=","CH","",""],["|","","","","","",""],["[CH₃]","","","","","",""]]},{"id":"o76","group":"有機化学(芳香族炭化水素)","type":"organic","name":"スチレン","name_iupac":"ビニルベンゼン","commonName":true,"nameParts":["スチレン"],"nameParts_iupac":["ビニルベンゼン"],"explanation":"ベンゼン環にビニル基（CH₂=CH-）が結合した化合物。付加重合によってポリスチレンを生成します。","formula_c":"C₆H₅CH=CH₂","formula_f":"C₈H₈","layout_c":[["[benzene]","","","-","[CH]","=","[CH₂]"],["","","","","","",""],["","","","","","",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","C","",""],["","","","","|","",""],["","","","","CH","=","CH₂"]],"layout_f":[["[benzene]","","","-","[CH]","=","[CH₂]"],["","","","","","",""],["","","","","","",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","C","",""],["","","","","|","",""],["","","","","CH","=","CH₂"]]},{"id":"o77","group":"有機化学(芳香族炭化水素)","type":"organic","name":"ナフタレン","name_iupac":"ナフタレン","commonName":true,"nameParts":["ナフタレン"],"explanation":"ベンゼン環が2つ縮合した多環芳香族炭化水素。昇華性のある白色固体です。酸化すると無水フタル酸になります。","formula_c":"C₁₀H₈","formula_f":"C₁₀H₈","layout_c":[["","[HC]","=","[CH]","","[HC]","=","[CH]",""],["[HC]","","","","[C]","","","","[CH]"],["|","","","","||","","","","|"],["[HC]","","","","[C]","","","","[CH]"],["","[HC]","=","[CH]","","[HC]","=","[CH]",""]],"layout_f":[["","[HC]","=","[CH]","","[HC]","=","[CH]",""],["[HC]","","","","[C]","","","","[CH]"],["|","","","","||","","","","|"],["[HC]","","","","[C]","","","","[CH]"],["","[HC]","=","[CH]","","[HC]","=","[CH]",""]]},{"id":"o78","group":"有機化学(芳香族炭化水素)","type":"organic","name":"アントラセン","name_iupac":"アントラセン","commonName":true,"nameParts":["アントラセン"],"explanation":"ベンゼン環が3つ直線状に縮合した多環芳香族炭化水素。コールタールから得られる白色固体です。","formula_c":"C₁₄H₁₀","formula_f":"C₁₄H₁₀","layout_c":[["","[HC]","=","[CH]","","[HC]","=","[CH]","","[HC]","=","[CH]",""],["[HC]","","","","[C]","","","","[C]","","","","[CH]"],["|","","","","||","","","","||","","","","|"],["[HC]","","","","[C]","","","","[C]","","","","[CH]"],["","[HC]","=","[CH]","","[HC]","=","[CH]","","[HC]","=","[CH]",""]],"layout_f":[["","[HC]","=","[CH]","","[HC]","=","[CH]","","[HC]","=","[CH]",""],["[HC]","","","","[C]","","","","[C]","","","","[CH]"],["|","","","","||","","","","||","","","","|"],["[HC]","","","","[C]","","","","[C]","","","","[CH]"],["","[HC]","=","[CH]","","[HC]","=","[CH]","","[HC]","=","[CH]",""]]},{"id":"o79","group":"有機化学(芳香族炭化水素)","type":"organic","name":"ニトロベンゼン","name_iupac":"ニトロベンゼン","commonName":true,"nameParts":["ニトロベンゼン"],"explanation":"ベンゼンのニトロ化で生成する淡黄色液体。強い毒性があり、還元するとアニリンになります。","formula_c":"C₆H₅NO₂","formula_f":"C₆H₅NO₂","layout_c":[["","","HC","=","CH","",""],["","HC","","","","CH",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","C","",""],["","","","","|","",""],["","","","","[NO₂]","",""]],"layout_f":[["","","HC","=","CH","",""],["","HC","","","","CH",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","C","",""],["","","","","|","",""],["","","","","[NO₂]","",""]]},{"id":"o80","group":"有機化学(基)","type":"organic","name":"フェニル基","nameParts":["フェニル基"],"explanation":"ベンゼン環から水素を1つ取り除いた原子団（-C₆H₅）。芳香族化合物の親基。","formula_c":"C₆H₅-","formula_f":"C₆H₅-","layout_c":[["","","[HC]","=","[CH]","",""],["","[HC]","","","","[CH]",""],["||","","","","","","||"],["","[HC]","","","","[CH]",""],["","","[HC]","=","[C]","",""],["","","","","|","",""],["","","","","-","",""]]},{"id":"o81","group":"有機化学(基)","type":"organic","name":"ベンジル基","nameParts":["ベンジル基"],"explanation":"フェニル基にメチレン基（-CH₂-）が結合した原子団（-CH₂C₆H₅）。","formula_c":"C₆H₅CH₂-","formula_f":"C₆H₅CH₂-","layout_c":[["","","HC","=","CH","",""],["","HC","","","","CH",""],["||","","","","","","||"],["","HC","","","","CH",""],["","","HC","=","C","",""],["","","","","|","",""],["","","","","[CH₂]","-",""]]},{"id":"o71","group":"有機化学(芳香族)","type":"organic","name":"ベンゼン","commonName":false,"name_iupac":"ベンゼン","nameParts":["ベンゼン"],"explanation":"最も基本的な芳香族炭化水素。正六角形の共鳴構造を持ち、置換反応を起こしやすい。分子式C₆H₆。","formula_c":"C₆H₆","formula_f":"C₆H₆","layout_c":[["[benzene]","",""],["","",""],["","",""]],"layout_f":[["[benzene]","",""],["","",""],["","",""]]},{"id":"o72","group":"有機化学(芳香族)","type":"organic","name":"トルエン","commonName":true,"name_iupac":"メチルベンゼン","nameParts":["トルエン"],"nameParts_iupac":["メチルベンゼン"],"explanation":"ベンゼンの水素1つをメチル基(-CH₃)で置換した化合物。無色の液体で溶媒として利用される。","formula_c":"C₆H₅CH₃","formula_f":"C₇H₈","layout_c":[["[benzene]","","","-","[CH₃]"],["","","","",""],["","","","",""]],"layout_f":[["[benzene]","","","-","[CH₃]"],["","","","",""],["","","","",""]]},{"id":"o73","group":"有機化学(芳香族)","type":"organic","name":"o-キシレン","commonName":true,"name_iupac":"1,2-ジメチルベンゼン","nameParts":["o","-","キシレン"],"nameParts_iupac":["1",",","2","-","ジメチルベンゼン"],"explanation":"ベンゼンの隣り合う2つの水素をメチル基で置換したもの（ortho体）。","formula_c":"C₆H₄(CH₃)₂","formula_f":"C₈H₁₀","layout_c":[["[benzene]","","","-","[CH₃]"],["","","","",""],["","","-","","[CH₃]"]]},{"id":"o74","group":"有機化学(芳香族)","type":"organic","name":"m-キシレン","commonName":true,"name_iupac":"1,3-ジメチルベンゼン","nameParts":["m","-","キシレン"],"nameParts_iupac":["1",",","3","-","ジメチルベンゼン"],"explanation":"ベンゼンの1,3位の水素をメチル基で置換したもの（meta体）。","formula_c":"C₆H₄(CH₃)₂","formula_f":"C₈H₁₀"},{"id":"o75","group":"有機化学(芳香族)","type":"organic","name":"p-キシレン","commonName":true,"name_iupac":"1,4-ジメチルベンゼン","nameParts":["p","-","キシレン"],"nameParts_iupac":["1",",","4","-","ジメチルベンゼン"],"explanation":"ベンゼンの1,4位（反対側）の水素をメチル基で置換したもの（para体）。PETの原料テレフタル酸の合成に使われる。","formula_c":"[CH₃]-[benzene]-[CH₃]","formula_f":"C₈H₁₀","layout_c":[["[CH₃]","-","[benzene]","","-","[CH₃]"],["","","","","",""],["","","","","",""]],"layout_f":[["[CH₃]","-","[benzene]","","-","[CH₃]"],["","","","","",""],["","","","","",""]]},{"id":"o76","group":"有機化学(芳香族)","type":"organic","name":"スチレン","commonName":true,"name_iupac":"ビニルベンゼン","nameParts":["スチレン"],"nameParts_iupac":["ビニルベンゼン"],"explanation":"ベンゼンにビニル基(-CH=CH₂)が結合した化合物。ポリスチレンやABS樹脂の原料。","formula_c":"C₆H₅CH=CH₂","formula_f":"C₈H₈","layout_c":[["[benzene]","","","-","[CH]","=","[CH₂]"],["","","","","","",""],["","","","","","",""]]},{"id":"o77","group":"有機化学(芳香族)","type":"organic","name":"フェノール","commonName":true,"name_iupac":"ヒドロキシベンゼン","nameParts":["フェノール"],"nameParts_iupac":["ヒドロキシベンゼン"],"explanation":"ベンゼンにヒドロキシ基(-OH)が結合した化合物。弱い酸性を示し、NaOHと反応してナトリウムフェノキシドになる。防腐剤・殺菌剤として使われる。","formula_c":"C₆H₅OH","formula_f":"C₆H₆O","layout_c":[["[benzene]","","","-","[OH]"],["","","","",""],["","","","",""]]},{"id":"o78","group":"有機化学(芳香族)","type":"organic","name":"アニリン","commonName":true,"name_iupac":"ベンゼンアミン","nameParts":["アニリン"],"nameParts_iupac":["ベンゼンアミン"],"explanation":"ベンゼンにアミノ基(-NH₂)が結合した化合物。弱い塩基性を示す。ジアゾ化・アゾ染料合成の出発物質。","formula_c":"C₆H₅NH₂","formula_f":"C₆H₇N","layout_c":[["[benzene]","","","-","[NH₂]"],["","","","",""],["","","","",""]]},{"id":"o79","group":"有機化学(芳香族)","type":"organic","name":"安息香酸","commonName":true,"name_iupac":"ベンゼンカルボン酸","nameParts":["安息香酸"],"nameParts_iupac":["ベンゼンカルボン酸"],"explanation":"ベンゼンにカルボキシ基(-COOH)が結合した化合物。防腐剤として使われる。NaHCO₃水溶液にも溶ける。","formula_c":"C₆H₅COOH","formula_f":"C₇H₆O₂","layout_c":[["[benzene]","","","-","[COOH]"],["","","","",""],["","","","",""]]},{"id":"o80","group":"有機化学(芳香族)","type":"organic","name":"ニトロベンゼン","commonName":false,"name_iupac":"ニトロベンゼン","nameParts":["ニトロベンゼン"],"explanation":"ベンゼンをニトロ化（混酸: 濃HNO₃＋濃H₂SO₄）して得られる。淡黄色の液体。アニリン合成の中間体（Fe+HClで還元）。","formula_c":"C₆H₅NO₂","formula_f":"C₆H₅NO₂","layout_c":[["[benzene]","","","-","[NO₂]"],["","","","",""],["","","","",""]]},{"id":"o81","group":"有機化学(芳香族)","type":"organic","name":"ナフタレン","commonName":false,"name_iupac":"ナフタレン","nameParts":["ナフタレン"],"explanation":"ベンゼン環2つが縮合した多環芳香族炭化水素。昇華性がある白色固体で、防虫剤として利用される。","formula_c":"C₁₀H₈","formula_f":"C₁₀H₈"},{"id":"o82","group":"有機化学(基)","type":"organic","name":"フェニル基","nameParts":["フェニル基"],"explanation":"ベンゼン環から水素1つを取り除いた1価の基（-C₆H₅）。Phと略記する。","formula_c":"-C₆H₅","formula_f":"-C₆H₅","layout_c":[["[benzene]","","","-"],["","","",""],["","","",""]],"layout_f":[["[benzene]","","","-"],["","","",""],["","","",""]]},{"id":"o83","group":"有機化学(基)","type":"organic","name":"ベンジル基","nameParts":["ベンジル基"],"explanation":"フェニル基にメチレン基(-CH₂-)が結合した基（-CH₂C₆H₅）。Bnと略記する。","formula_c":"-CH₂C₆H₅","formula_f":"-CH₂C₆H₅","layout_c":[["[benzene]","","","-","[CH₂]","-"],["","","","","",""],["","","","","",""]],"layout_f":[["[benzene]","","","-","[CH₂]","-"],["","","","","",""],["","","","","",""]]},{"id":"s1","group":"天然高分子化合物(糖の基礎)","type":"organic","name":"単糖","nameParts":["単糖"],"explanation":"それ以上加水分解されない糖の最小単位。グルコース・フルクトース・ガラクトースなど。分子式はCₙH₂ₙOₙ(多くはn=6のヘキソース)で表される。"},{"id":"s2","group":"天然高分子化合物(糖の基礎)","type":"organic","name":"二糖","nameParts":["二糖"],"explanation":"単糖2分子が脱水縮合（グリコシド結合）した糖。加水分解すると単糖2分子を生じる。マルトース・スクロース・ラクトースなど。"},{"id":"s3","group":"天然高分子化合物(糖の基礎)","type":"organic","name":"多糖","nameParts":["多糖"],"explanation":"多数の単糖がグリコシド結合で連なった天然高分子化合物。デンプン・セルロース・グリコーゲンなど。一般式は(C₆H₁₀O₅)ₙで表される。"},{"id":"s4","group":"天然高分子化合物(糖の基礎)","type":"organic","name":"グリコシド結合","nameParts":["グリコシド結合"],"explanation":"単糖の環状構造にあるヒドロキシ基どうしが脱水縮合してできるエーテル型の結合。糖どうしを連結する結合であり、酸や酵素により加水分解される。"},{"id":"s5","group":"天然高分子化合物(糖の基礎)","type":"organic","name":"還元糖","nameParts":["還元糖"],"explanation":"水溶液中で環が開いてホルミル基(-CHO)を生じ、フェーリング液を還元したり銀鏡反応を示す糖。グルコース・フルクトース・マルトース・ラクトースは還元糖だが、スクロースは非還元糖である。"},{"id":"s6","group":"天然高分子化合物(単糖類)","type":"organic","name":"グルコース","commonName":true,"name_iupac":"ブドウ糖","nameParts":["グルコース"],"nameParts_iupac":["ブドウ糖"],"explanation":"代表的な六炭糖(ヘキソース)で、鎖状構造にはホルミル基(-CHO)をもつアルデヒド型の還元糖。水溶液中では大部分が六員環（ピラノース環）構造をとる。デンプン・セルロース・マルトースなどを構成する。","formula_c":"CHO(CHOH)₄CH₂OH","formula_f":"C₆H₁₂O₆","layout_c":[["[CHO]","-","[CHOH]","-","[CHOH]","-","[CHOH]","-","[CHOH]","-","[CH₂OH]"]]},{"id":"s7","group":"天然高分子化合物(単糖類)","type":"organic","name":"フルクトース","commonName":true,"name_iupac":"果糖","nameParts":["フルクトース"],"nameParts_iupac":["果糖"],"explanation":"グルコースの構造異性体（分子式は同じC₆H₁₂O₆）である六炭糖。鎖状構造にはカルボニル基(>C=O)をもつケトン型だが、還元性を示す（還元糖）。果実やはちみつに多く含まれ、糖類の中で最も甘い。","formula_c":"CH₂OH-CO-(CHOH)₃-CH₂OH","formula_f":"C₆H₁₂O₆","layout_c":[["[CH₂OH]","-","[CO]","-","[CHOH]","-","[CHOH]","-","[CHOH]","-","[CH₂OH]"]]},{"id":"s8","group":"天然高分子化合物(単糖類)","type":"organic","name":"ガラクトース","nameParts":["ガラクトース"],"explanation":"グルコースの立体異性体（エピマー）で、分子式はグルコースと同じC₆H₁₂O₆。鎖状構造の骨格（CHO-(CHOH)₄-CH₂OH）はグルコースと同一だが、C4位の-OHの向きが異なる。ラクトース（乳糖）の構成成分。この違いは平面的な示性式では表せないため、構造式クイズでは出題対象外としている。","formula_c":"CHO(CHOH)₄CH₂OH","formula_f":"C₆H₁₂O₆"},{"id":"s9","group":"天然高分子化合物(二糖類)","type":"organic","name":"マルトース","commonName":true,"name_iupac":"麦芽糖","nameParts":["マルトース"],"nameParts_iupac":["麦芽糖"],"explanation":"2分子のα-グルコースが縮合したグリコシド結合(α-1,4結合)をもつ二糖。デンプンをアミラーゼで加水分解すると得られる。還元性を示す（還元糖）。","formula_c":"C₁₂H₂₂O₁₁","formula_f":"C₁₂H₂₂O₁₁"},{"id":"s10","group":"天然高分子化合物(二糖類)","type":"organic","name":"スクロース","commonName":true,"name_iupac":"ショ糖","nameParts":["スクロース"],"nameParts_iupac":["ショ糖"],"explanation":"α-グルコースとβ-フルクトースが、互いのホルミル基・カルボニル基側の炭素どうしで結合した二糖。還元性を示す部分が結合に使われているため非還元糖であり、フェーリング液を還元しない。砂糖の主成分。","formula_c":"C₁₂H₂₂O₁₁","formula_f":"C₁₂H₂₂O₁₁"},{"id":"s11","group":"天然高分子化合物(二糖類)","type":"organic","name":"ラクトース","commonName":true,"name_iupac":"乳糖","nameParts":["ラクトース"],"nameParts_iupac":["乳糖"],"explanation":"β-ガラクトースとグルコースが縮合した二糖で、哺乳類の乳汁に含まれる。還元性を示す（還元糖）。","formula_c":"C₁₂H₂₂O₁₁","formula_f":"C₁₂H₂₂O₁₁"},{"id":"s12","group":"天然高分子化合物(二糖類)","type":"organic","name":"セロビオース","nameParts":["セロビオース"],"explanation":"2分子のβ-グルコースがβ-1,4結合した二糖。セルロースを部分的に加水分解すると得られる構成単位。還元性を示す（還元糖）。","formula_c":"C₁₂H₂₂O₁₁","formula_f":"C₁₂H₂₂O₁₁"},{"id":"s13","group":"天然高分子化合物(多糖類)","type":"organic","name":"アミロース","nameParts":["アミロース"],"explanation":"デンプンの成分の一つ。多数のα-グルコースがα-1,4結合のみで直鎖状に連なり、らせん構造をとる。ヨウ素デンプン反応で濃青色を呈する。","formula_c":"(C₆H₁₀O₅)ₙ","formula_f":"(C₆H₁₀O₅)ₙ"},{"id":"s14","group":"天然高分子化合物(多糖類)","type":"organic","name":"アミロペクチン","nameParts":["アミロペクチン"],"explanation":"デンプンの成分の一つ。α-グルコースがα-1,4結合に加え、所々でα-1,6結合により枝分かれした構造をもつ。ヨウ素デンプン反応で赤紫色を呈する。","formula_c":"(C₆H₁₀O₅)ₙ","formula_f":"(C₆H₁₀O₅)ₙ"},{"id":"s15","group":"天然高分子化合物(多糖類)","type":"organic","name":"セルロース","nameParts":["セルロース"],"explanation":"多数のβ-グルコースがβ-1,4結合で直鎖状に連なった多糖。分子間で水素結合を形成し、平行に束ねられた繊維状構造をとるため強度が高い。植物の細胞壁の主成分。ヨウ素デンプン反応は示さない。","formula_c":"(C₆H₁₀O₅)ₙ","formula_f":"(C₆H₁₀O₅)ₙ"},{"id":"s16","group":"天然高分子化合物(多糖類)","type":"organic","name":"グリコーゲン","nameParts":["グリコーゲン"],"explanation":"多数のα-グルコースがα-1,4結合とα-1,6結合で連なった多糖で、アミロペクチンよりも枝分かれが多い。動物の肝臓や筋肉に貯蔵される（動物デンプンとも呼ばれる）。","formula_c":"(C₆H₁₀O₅)ₙ","formula_f":"(C₆H₁₀O₅)ₙ"}];
+
+    const generalFormulaMap = {
+        "炭化水素(高2・3学期)": "CₙH₂ₙ₊₂(アルカン) / CₙH₂ₙ(アルケン) / CₙH₂ₙ₋₂(アルキン)",
+        "有機化学(アルコール・エーテル)": "1価アルコール: CₙH₂ₙ₊₂O  エーテル: CₙH₂ₙ₊₂O",
+        "有機化学(アルデヒド・ケトン)": "飽和アルデヒド/ケトン: CₙH₂ₙO",
+        "有機化学(カルボン酸・エステル)": "飽和1価カルボン酸: CₙH₂ₙO₂  エステル: CₙH₂ₙO₂",
+        "有機化学(芳香族炭化水素)": "ベンゼン系: CₙH₂ₙ₋₆  ナフタレン系: CₙH₂ₙ₋₁₂",
+        "天然高分子化合物(単糖類)": "六炭糖(ヘキソース): C₆H₁₂O₆",
+        "天然高分子化合物(二糖類)": "C₁₂H₂₂O₁₁",
+        "天然高分子化合物(多糖類)": "(C₆H₁₀O₅)ₙ"
+    };
+
+    function shouldUseCommonName(q) {
+        if (!q.name_iupac) return true;
+        const mode = (window._organicUseCommon !== undefined)
+            ? window._organicUseCommon
+            : document.getElementById('organic-use-common').value;
+        if (mode === 'all')    return true;
+        if (mode === 'none')   return false;
+        return q.commonName === true;
+    }
+    function getQName(q) {
+        return shouldUseCommonName(q) ? q.name : q.name_iupac;
+    }
+    function getQNameParts(q) {
+        return shouldUseCommonName(q) ? q.nameParts : (q.nameParts_iupac || q.nameParts);
+    }
+    function getAltName(q) {
+        if (!q.name_iupac) return "";
+        return shouldUseCommonName(q) ? q.name_iupac : q.name;
+    }
+    function buildExplanationHtml(q) {
+        const alt = getAltName(q);
+        const altHtml = alt
+            ? `<div style="margin-top:6px; font-size:0.9em; color:#6366f1; font-weight:bold;">別名: <span style="font-family:serif;">${alt}</span></div>`
+            : "";
+        if (q.explanation) {
+            return `<div class="explanation-box"><div class="explanation-box-title">💡 命名法の解説</div>${q.explanation}${altHtml}</div>`;
+        } else if (alt) {
+            return `<div class="explanation-box">${altHtml}</div>`;
+        }
+        return "";
+    }
+
+    function getGeneralFormulaHtml(group) {
+        const cb = document.getElementById('organic-show-general');
+        if (cb && !cb.checked) return "";
+        const gf = generalFormulaMap[group];
+        if (gf) return `<div style="font-size:0.85em; color:#6366f1; margin-top:5px; font-weight:bold;">一般式の例: <span style="font-family:serif;">${gf}</span></div>`;
+        return "";
+    }
+
+    let currentMode, quizList, currentIndex, score, organicDir, wrongQuestions = [], activeOrganicGroups = [];
+    let organicAnswers = [], currentOrgInputIdx = 0;
+    const screens = { home: document.getElementById('screen-home'), play: document.getElementById('screen-play'), result: document.getElementById('screen-result'), list: document.getElementById('screen-list') };
+
+    function renderGroupFilters() {
+        const organicContainer = document.getElementById('organic-group-filter-container');
+        const organicGroups = [...new Set(rawData.map(item => item.group))];
+        organicContainer.innerHTML = organicGroups.map(g => {
+            const m = g.match(/^有機化学\((.+)\)$/);
+            const label = m ? m[1] : g;
+            return `<label class="group-chip"><input type="checkbox" name="organic-group-select" value="${g}" checked> ${label}</label>`;
+        }).join('');
+    }
+    renderGroupFilters();
+
+    function shuffleArray(array) {
+        const a = [...array];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = a[i];
+            a[i] = a[j];
+            a[j] = temp;
+        }
+        return a;
+    }
+
+    function startQuiz(mode) {
+        currentMode = mode;
+        let list = [];
+
+        organicDir = document.getElementById('organic-dir').value;
+        activeOrganicGroups = Array.from(document.querySelectorAll('input[name="organic-group-select"]:checked')).map(cb => cb.value);
+        list = rawData.filter(d => activeOrganicGroups.includes(d.group));
+
+        if (organicDir.includes("struct") || organicDir === "name-to-formula") {
+            list = list.filter(d => d.group !== "有機化学(数詞)");
+        }
+        if (organicDir === "name-to-formula" || organicDir === "formula-to-name") {
+            list = list.filter(d => d.group !== "有機化学(基)");
+        }
+        if (organicDir === "name-to-struct") {
+            list = list.filter(d => {
+                const layout = window._organicCondensed ? d.layout_c : (d.layout_f || d.layout_c);
+                if (!layout) return false;
+                return layout.some(row => row.some(cell =>
+                    cell && cell.match(/^\[(?!benzene\]).*\]$/)
+                ));
+            });
+        }
+        if (organicDir === "struct-to-name") {
+            // 構造式データ（layout）を持たない項目（用語・二糖類/多糖類など）は除外
+            list = list.filter(d => !!(window._organicCondensed ? d.layout_c : (d.layout_f || d.layout_c)));
+        }
+        if (organicDir === "name-to-formula" || organicDir === "formula-to-name") {
+            // 分子式・示性式データを持たない項目（用語のみのデータ）は除外
+            const isCond = window._organicCondensed;
+            list = list.filter(d => !!(isCond ? d.formula_c : (d.formula_f || d.formula_c)));
+        }
+        if (list.length === 0) return alert("選択されたグループに出題可能なデータがありません。");
+
+        if (document.getElementById('is-random').checked) {
+            quizList = shuffleArray(list);
+        } else { quizList = list; }
+
+        currentIndex = 0; score = 0; wrongQuestions = [];
+        document.getElementById('total-num').textContent = quizList.length;
+        showScreen('play');
+        loadQuestion();
+    }
+
+    function retryWrongQuestions() {
+        if (wrongQuestions.length === 0) return;
+        quizList = shuffleArray(wrongQuestions);
+        currentIndex = 0; score = 0; wrongQuestions = [];
+        document.getElementById('total-num').textContent = quizList.length;
+        showScreen('play');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const q = quizList[currentIndex];
+        document.getElementById('current-num').textContent = currentIndex + 1;
+        document.getElementById('result-msg').style.display = 'none';
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('question-header').classList.remove('hidden');
+        document.getElementById('q-id-display').classList.remove('hidden');
+
+        ['mode1-area', 'mode9-area', 'fc-area'].forEach(id => document.getElementById(id).classList.add('hidden'));
+
+        if (currentMode === 8) {
+            setupFlashcard(q);
+        } else if (currentMode === 7) {
+            setupMode7(q);
+        } else if (currentMode === 9) {
+            setupMode9(q);
+        }
+    }
+
+    function extractAnswersFromLayout(layout) {
+        let ans = [];
+        if (!layout) return ans;
+        layout.forEach(row => {
+            row.forEach(cell => {
+                let m = cell.match(/\[(.*?)\]/);
+                if (m) ans.push(m[1]);
+            });
+        });
+        return ans;
+    }
+
+    function getLayoutForQuestion(q) {
+        const isCond = (window._organicCondensed !== undefined) ? window._organicCondensed : document.getElementById('organic-condensed').checked;
+        return isCond ? q.layout_c : (q.layout_f || q.layout_c);
+    }
+
+    function renderBenzeneRing(size = 52) {
+        const cx = size / 2, cy = size / 2, r = size * 0.42, ri = r * 0.62;
+        const pts = Array.from({length: 6}, (_, i) => {
+            const a = Math.PI / 180 * (60 * i - 30);
+            return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+        });
+        const outerPoly = pts.map(p => p.join(',')).join(' ');
+        return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display:block; overflow:visible;">
+            <polygon points="${outerPoly}" fill="none" stroke="var(--secondary)" stroke-width="2"/>
+            <circle cx="${cx}" cy="${cy}" r="${ri}" fill="none" stroke="var(--secondary)" stroke-width="1.5" stroke-dasharray="none"/>
+        </svg>`;
+    }
+
+    function renderStructTable(layoutArray, renderMode = "input", answersArray = []) {
+        if(!layoutArray) return "";
+
+        let maxCols = 0;
+        layoutArray.forEach(row => {
+            if (row.length > maxCols) maxCols = row.length;
+        });
+
+        const TD_H = '2.2em';
+        const TD_W = '2em';
+        let html = '<div class="struct-wrapper"><table class="struct-table">';
+        let idx = 0;
+        layoutArray.forEach(row => {
+            html += `<tr style="height:${TD_H};">`;
+            for (let i = 0; i < maxCols; i++) {
+                let cell = row[i] || "";
+                const tdBase = `style="padding:0; height:${TD_H}; min-width:${TD_W}; text-align:center; vertical-align:middle;"`;
+                if (cell === "") {
+                    html += `<td ${tdBase}></td>`;
+                } else if (cell === '[benzene]') {
+                    if (renderMode === 'input') {
+                        html += `<td ${tdBase} rowspan="3" colspan="3" style="padding:0; height:${TD_H}; text-align:center; vertical-align:middle;"><span class="org-box" data-idx="${idx}" style="min-width:3em; display:inline-flex; align-items:center; justify-content:center;">${renderBenzeneRing(56)}</span></td>`;
+                    } else {
+                        html += `<td ${tdBase} rowspan="3" colspan="3" style="padding:0; text-align:center; vertical-align:middle;">${renderBenzeneRing(56)}</td>`;
+                    }
+                    idx++;
+                } else {
+                    let m = cell.match(/^\[(.*?)\]$/);
+                    if (m) {
+                        let ansText = answersArray[idx] || "";
+                        if (renderMode === "input") {
+                            let w = Math.max(ansText.length + 1, 2);
+                            html += `<td ${tdBase}><span class="org-box" data-idx="${idx}" style="min-width:${w}ch;"></span></td>`;
+                        } else {
+                            html += `<td ${tdBase}><span class="struct-ans-text" style="min-width:1.8em;">${ansText}</span></td>`;
+                        }
+                        idx++;
+                    } else {
+                        let b = '';
+                        if (cell === '-') {
+                            b = `<svg width="100%" height="${TD_H}" viewBox="0 0 32 35" preserveAspectRatio="none" style="display:block; min-width:1.8em;"><line x1="0" y1="17" x2="32" y2="17" stroke="var(--secondary)" stroke-width="2"/></svg>`;
+                        } else if (cell === '=') {
+                            b = `<svg width="100%" height="${TD_H}" viewBox="0 0 32 35" preserveAspectRatio="none" style="display:block; min-width:1.8em;"><line x1="0" y1="13" x2="32" y2="13" stroke="var(--secondary)" stroke-width="2"/><line x1="0" y1="21" x2="32" y2="21" stroke="var(--secondary)" stroke-width="2"/></svg>`;
+                        } else if (cell === '≡') {
+                            b = `<svg width="100%" height="${TD_H}" viewBox="0 0 32 35" preserveAspectRatio="none" style="display:block; min-width:1.8em;"><line x1="0" y1="10" x2="32" y2="10" stroke="var(--secondary)" stroke-width="2"/><line x1="0" y1="17" x2="32" y2="17" stroke="var(--secondary)" stroke-width="2"/><line x1="0" y1="24" x2="32" y2="24" stroke="var(--secondary)" stroke-width="2"/></svg>`;
+                        } else if (cell === '|') {
+                            b = `<svg width="${TD_W}" height="${TD_H}" viewBox="0 0 32 35" style="display:block; margin:auto;"><line x1="16" y1="0" x2="16" y2="35" stroke="var(--secondary)" stroke-width="2"/></svg>`;
+                        } else if (cell === '||') {
+                            b = `<svg width="${TD_W}" height="${TD_H}" viewBox="0 0 32 35" style="display:block; margin:auto;"><line x1="11" y1="0" x2="11" y2="35" stroke="var(--secondary)" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="35" stroke="var(--secondary)" stroke-width="2"/></svg>`;
+                        } else if (cell === '/') {
+                            b = `<svg width="${TD_W}" height="${TD_H}" viewBox="0 0 32 35" style="display:block; margin:auto;"><line x1="28" y1="2" x2="4" y2="33" stroke="var(--secondary)" stroke-width="2"/></svg>`;
+                        } else if (cell === '\\') {
+                            b = `<svg width="${TD_W}" height="${TD_H}" viewBox="0 0 32 35" style="display:block; margin:auto;"><line x1="4" y1="2" x2="28" y2="33" stroke="var(--secondary)" stroke-width="2"/></svg>`;
+                        } else {
+                            b = `<span class="struct-ans-text" style="min-width:1.8em; white-space:nowrap;">${cell}</span>`;
+                        }
+                        html += `<td ${tdBase}>${b}</td>`;
+                    }
+                }
+            }
+            html += '</tr>';
+        });
+        html += '</table></div>';
+        return html;
+    }
+
+    function splitFormula(f) {
+        return f.match(/([A-Z][a-z]*|₂|₃|₄|₅|₆|₇|₈|₉|₁₀|₁₁|₁₂|₁₄|₁₆|₁₈|₂₀|ₙ|\(|\)|=|-|≡|環状|シス|トランス|o|m|p)/g) || [f];
+    }
+
+    function setupMode9(q) {
+        const isCond = (window._organicCondensed !== undefined) ? window._organicCondensed : document.getElementById('organic-condensed').checked;
+        const layout = getLayoutForQuestion(q);
+        const formulaStr = isCond ? q.formula_c : q.formula_f;
+
+        if (!layout && organicDir.includes("struct")) { nextQuestion(); return; }
+
+        const qHeader = document.getElementById('question-header');
+        qHeader.classList.remove('hidden');
+        document.getElementById('q-id-display').classList.add('hidden');
+        const mode9Area = document.getElementById('mode9-area');
+        mode9Area.classList.remove('hidden');
+
+        organicAnswers = [];
+
+        if (organicDir === "name-to-struct") {
+            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em; font-weight:bold;">${getQName(q)}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>${getGeneralFormulaHtml(q.group)}`;
+
+            organicAnswers = extractAnswersFromLayout(layout);
+            const inputCells = organicAnswers.filter(a => a !== 'benzene');
+            if (inputCells.length === 0) { nextQuestion(); return; }
+            document.getElementById('organic-build-display').innerHTML = renderStructTable(layout, "input", organicAnswers);
+
+            let pool = [...new Set(organicAnswers)];
+            let dummies = isCond ? ["CH₃", "CH₂", "CH", "C", "H", "OH", "O", "NH₂", "COOH", "CHO", "COO"] : ["C", "H", "O", "N", "S", "CH₃", "CH₂", "OH", "NH₂"];
+            dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
+            pool = shuffleArray(pool).slice(0, 12);
+            renderOrgKeys(pool, false);
+
+        } else if (organicDir === "name-to-formula") {
+            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.3em; font-weight:bold;">${getQName(q)}</div><div style="font-size:0.8em; color:#666;">の分子式（または示性式）は？</div>${getGeneralFormulaHtml(q.group)}`;
+            let parts = splitFormula(formulaStr);
+            parts.forEach((p) => { organicAnswers.push(p); });
+
+            let inputsHtml = "";
+            parts.forEach((_, idx) => {
+                inputsHtml += `<span class="org-box-large" data-idx="${idx}"></span>`;
+            });
+            document.getElementById('organic-build-display').innerHTML = `<div style="display:flex; justify-content:center; flex-wrap:wrap; margin-top:10px;">${inputsHtml}</div>`;
+
+            let pool = [...new Set(parts)];
+            let dummies = ["C", "H", "O", "₂", "₃", "₄", "₆", "₈"];
+            dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
+            pool = shuffleArray(pool).slice(0, 12);
+            renderOrgKeys(pool, false);
+
+        } else if (organicDir === "struct-to-name") {
+            const ansArr = extractAnswersFromLayout(layout);
+            document.getElementById('q-desc').innerHTML = `${renderStructTable(layout, "answer", ansArr)}<div style="font-size:0.8em; color:#666; margin-top:5px;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
+
+            let inputsHtml = "";
+            getQNameParts(q).forEach((part, idx) => {
+                organicAnswers.push(part);
+                inputsHtml += `<span class="org-box-large" data-idx="${idx}"></span>`;
+            });
+            document.getElementById('organic-build-display').innerHTML = `<div style="display:flex; justify-content:center; flex-wrap:wrap; margin-top:10px;">${inputsHtml}</div>`;
+
+            let words = getQNameParts(q).filter(p => !p.match(/^[0-9\-\,]+$/));
+            let pool = [...new Set(words)];
+            let dummies = ["メチル", "エチル", "プロパン", "ブタン", "ペンタン", "シス", "トランス", "シクロ"];
+            dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
+            pool = shuffleArray(pool).slice(0, 8);
+            renderOrgKeys(pool, true);
+
+        } else if (organicDir === "formula-to-name") {
+            document.getElementById('q-desc').innerHTML = `<div style="font-size:1.8em; font-family:serif; font-weight:bold;">${formulaStr}</div><div style="font-size:0.8em; color:#666;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
+
+            let inputsHtml = "";
+            getQNameParts(q).forEach((part, idx) => {
+                organicAnswers.push(part);
+                inputsHtml += `<span class="org-box-large" data-idx="${idx}"></span>`;
+            });
+            document.getElementById('organic-build-display').innerHTML = `<div style="display:flex; justify-content:center; flex-wrap:wrap; margin-top:10px;">${inputsHtml}</div>`;
+
+            let words = getQNameParts(q).filter(p => !p.match(/^[0-9\-\,]+$/));
+            let pool = [...new Set(words)];
+            let dummies = ["メチル", "エチル", "プロパン", "ブタン", "ペンタン", "シス", "トランス", "シクロ", "モノ", "ジ", "トリ", "テトラ", "酸", "オン", "ナール"];
+            dummies.forEach(d => { if(!pool.includes(d)) pool.push(d); });
+            pool = shuffleArray(pool).slice(0, 8);
+            renderOrgKeys(pool, true);
+        }
+
+        setTimeout(() => {
+            const inputs = document.querySelectorAll('.org-box, .org-box-large');
+            inputs.forEach(inp => {
+                inp.onclick = (e) => {
+                    document.querySelectorAll('.org-box, .org-box-large').forEach(i => i.classList.remove('active-input'));
+                    e.target.classList.add('active-input');
+                    currentOrgInputIdx = parseInt(e.target.getAttribute('data-idx'));
+                };
+            });
+            if(inputs.length > 0) {
+                inputs[0].classList.add('active-input');
+                currentOrgInputIdx = 0;
+            }
+        }, 10);
+    }
+
+    function renderOrgKeys(pool, includeNumToggle) {
+        const kb1 = document.getElementById('org-kb-1');
+        const kb2 = document.getElementById('org-kb-2');
+        kb1.innerHTML = '';
+        kb2.innerHTML = '';
+        kb2.classList.add('hidden');
+
+        pool.forEach(k => {
+            const b = document.createElement('button');
+            b.className = 'key-btn';
+            b.textContent = k;
+            b.onclick = () => mode9In(k);
+            kb1.appendChild(b);
+        });
+
+        if (includeNumToggle) {
+            const tb = document.createElement('button');
+            tb.className = 'key-btn key-op';
+            tb.textContent = "数字・記号";
+            tb.onclick = () => {
+                kb1.classList.toggle('hidden');
+                kb2.classList.toggle('hidden');
+            };
+            kb1.appendChild(tb);
+
+            const nums = ['0','1','2','3','4','5','6','7','8','9','-',','];
+            nums.forEach(n => {
+                const b = document.createElement('button');
+                b.className = 'key-btn';
+                b.textContent = n;
+                b.onclick = () => mode9In(n);
+                kb2.appendChild(b);
+            });
+            const backBtn = document.createElement('button');
+            backBtn.className = 'key-btn key-op';
+            backBtn.textContent = "戻る";
+            backBtn.onclick = () => {
+                kb1.classList.remove('hidden');
+                kb2.classList.add('hidden');
+            };
+            kb2.appendChild(backBtn);
+        }
+    }
+
+    function mode9In(v) {
+        const inputs = document.querySelectorAll('.org-box, .org-box-large');
+        if (inputs.length === 0) return;
+        while (currentOrgInputIdx < inputs.length && organicAnswers[parseInt(inputs[currentOrgInputIdx].getAttribute('data-idx'))] === 'benzene') {
+            currentOrgInputIdx++;
+        }
+        if (currentOrgInputIdx >= inputs.length) return;
+
+        if (v === 'BS') {
+            if (inputs[currentOrgInputIdx].textContent.trim() !== "") {
+                inputs[currentOrgInputIdx].textContent = "";
+            } else if (currentOrgInputIdx > 0) {
+                inputs[currentOrgInputIdx].classList.remove('active-input');
+                currentOrgInputIdx--;
+                inputs[currentOrgInputIdx].classList.add('active-input');
+                inputs[currentOrgInputIdx].textContent = "";
+            }
+        } else if (v === 'CLEAR') {
+            inputs.forEach(i => i.textContent = "");
+            inputs.forEach(i => i.classList.remove('active-input'));
+            inputs[0].classList.add('active-input');
+            currentOrgInputIdx = 0;
+        } else {
+            inputs[currentOrgInputIdx].textContent = v;
+            if (currentOrgInputIdx < inputs.length - 1) {
+                inputs[currentOrgInputIdx].classList.remove('active-input');
+                currentOrgInputIdx++;
+                inputs[currentOrgInputIdx].classList.add('active-input');
+            }
+        }
+    }
+
+    function checkOrganicBuildAnswer() {
+        const inputs = document.querySelectorAll('.org-box, .org-box-large');
+        let ok = true;
+        inputs.forEach((inp) => {
+            const idx = parseInt(inp.getAttribute('data-idx'));
+            if (organicAnswers[idx] && organicAnswers[idx].trim() === 'benzene') return;
+            if (inp.textContent.trim() !== organicAnswers[idx].trim()) ok = false;
+        });
+
+        const isCond = (window._organicCondensed !== undefined) ? window._organicCondensed : document.getElementById('organic-condensed').checked;
+        const q = quizList[currentIndex];
+        let ansHtml = "";
+
+        if (organicDir === "name-to-struct") {
+            const layout = getLayoutForQuestion(q);
+            const ansArr = extractAnswersFromLayout(layout);
+            ansHtml = renderStructTable(layout, "answer", ansArr);
+        } else if (organicDir === "name-to-formula") {
+            ansHtml = `<span style="font-size:1.5em; font-family:serif; font-weight:bold; color:var(--secondary);">${isCond ? q.formula_c : q.formula_f}</span>`;
+        } else {
+            ansHtml = `<span style="font-size:1.2em; font-weight:bold; color:var(--wrong);">${getQName(q)}</span>`;
+        }
+
+        const m = document.getElementById('result-msg');
+        m.style.display='block';
+        m.className = 'result-message ' + (ok ? 'correct' : 'wrong');
+        m.innerHTML = ok ? "正解！" : `不正解...<br><div style="font-size:0.9em; color:#666; margin-top:5px;">正解:</div>${ansHtml}`;
+        m.innerHTML += buildExplanationHtml(q);
+
+        if(ok) score++;
+        else wrongQuestions.push(q);
+
+        document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    function setupMode7(q) {
+        const qHeader = document.getElementById('question-header');
+        qHeader.classList.remove('hidden');
+        document.getElementById('q-id-display').classList.add('hidden');
+        const header = document.getElementById('q-desc');
+        const container = document.getElementById('mode1-area');
+        container.classList.remove('hidden');
+        container.innerHTML = '';
+
+        const isCond = (window._organicCondensed !== undefined) ? window._organicCondensed : document.getElementById('organic-condensed').checked;
+        const layout = getLayoutForQuestion(q);
+        const ansArr = extractAnswersFromLayout(layout);
+        const formulaStr = isCond ? q.formula_c : q.formula_f;
+
+        if (organicDir === "name-to-struct") {
+            header.innerHTML = `<div style="font-size:1.3em;">${getQName(q)}</div><div style="font-size:0.8em; color:#666;">の構造式は？</div>${getGeneralFormulaHtml(q.group)}`;
+        } else if (organicDir === "name-to-formula") {
+            header.innerHTML = `<div style="font-size:1.3em;">${getQName(q)}</div><div style="font-size:0.8em; color:#666;">の分子式（示性式）は？</div>${getGeneralFormulaHtml(q.group)}`;
+        } else if (organicDir === "struct-to-name") {
+            header.innerHTML = `${renderStructTable(layout, "answer", ansArr)}<div style="font-size:0.8em; color:#666; margin-top:5px;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
+        } else if (organicDir === "formula-to-name") {
+            header.innerHTML = `<div style="font-family:serif; font-size:1.5em; font-weight:bold;">${formulaStr}</div><div style="font-size:0.8em; color:#666;">の名称は？</div>${getGeneralFormulaHtml(q.group)}`;
+        }
+
+        const wrongPool = rawData.filter(d => {
+            if (!activeOrganicGroups.includes(d.group)) return false;
+            if (d.id === q.id) return false;
+            if (d.group === "有機化学(数詞)") return false;
+            if (organicDir === "name-to-struct" || organicDir === "struct-to-name") {
+                const layout = document.getElementById('organic-condensed').checked ? d.layout_c : (d.layout_f || d.layout_c);
+                return !!layout;
+            }
+            if (organicDir === "name-to-formula" || organicDir === "formula-to-name") {
+                const isCond2 = (window._organicCondensed !== undefined) ? window._organicCondensed : document.getElementById('organic-condensed').checked;
+                return !!(isCond2 ? d.formula_c : d.formula_f);
+            }
+            return true;
+        });
+        const shuffledWrongPool = shuffleArray(wrongPool);
+        const wrongChoices = shuffledWrongPool.slice(0, 3);
+        const choices = shuffleArray([q, ...wrongChoices]);
+
+        choices.forEach(c => {
+            const c_layout = getLayoutForQuestion(c);
+            const c_ansArr = extractAnswersFromLayout(c_layout);
+            const c_formula = isCond ? c.formula_c : c.formula_f;
+
+            let displayText = "";
+            let correctText = "";
+
+            if (organicDir === "name-to-struct") {
+                displayText = renderStructTable(c_layout, "answer", c_ansArr);
+                correctText = "表示されている構造式";
+            } else if (organicDir === "name-to-formula") {
+                displayText = `<span style="font-family:serif; font-weight:bold; font-size:1.2em;">${c_formula}</span>`;
+                correctText = formulaStr;
+            } else if (organicDir === "struct-to-name" || organicDir === "formula-to-name") {
+                displayText = getQName(c);
+                correctText = getQName(q);
+            }
+            container.appendChild(createOption(displayText, c.id === q.id, correctText));
+        });
+    }
+
+    function setupFlashcard(q) {
+        document.getElementById('fc-area').classList.remove('hidden');
+        document.getElementById('fc-front').classList.remove('hidden');
+        document.getElementById('fc-back').classList.add('hidden');
+
+        const qHeader = document.getElementById('question-header');
+        const front = document.getElementById('fc-front-content');
+
+        qHeader.classList.add('hidden');
+        const isCond = (window._organicCondensed !== undefined) ? window._organicCondensed : document.getElementById('organic-condensed').checked;
+        const layout = getLayoutForQuestion(q);
+        const ansArr = extractAnswersFromLayout(layout);
+        const formulaStr = isCond ? q.formula_c : q.formula_f;
+        const gfHtml = getGeneralFormulaHtml(q.group);
+
+        if (organicDir === "name-to-struct" || organicDir === "name-to-formula") {
+            front.innerHTML = `<div style="font-size:1.8em; font-weight:bold;">${getQName(q)}</div><div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>${gfHtml}`;
+        } else if (organicDir === "struct-to-name") {
+            front.innerHTML = `${renderStructTable(layout, "answer", ansArr)}<div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>${gfHtml}`;
+        } else if (organicDir === "formula-to-name") {
+            front.innerHTML = `<div style="font-size:1.8em; font-family:serif; font-weight:bold;">${formulaStr}</div><div style="font-size:1.1em; color:#666; margin-top:10px;">${q.group.replace("有機化学(", "").replace(")", "")}</div>${gfHtml}`;
+        }
+    }
+
+    function showFcAnswer() {
+        const q = quizList[currentIndex];
+        const content = document.getElementById('fc-answer-content');
+        document.getElementById('fc-front').classList.add('hidden');
+        document.getElementById('fc-back').classList.remove('hidden');
+
+        const isCond = (window._organicCondensed !== undefined) ? window._organicCondensed : document.getElementById('organic-condensed').checked;
+        const layout = getLayoutForQuestion(q);
+        const ansArr = extractAnswersFromLayout(layout);
+        const formulaStr = isCond ? q.formula_c : q.formula_f;
+        const gfHtml = getGeneralFormulaHtml(q.group);
+
+        if (organicDir === "name-to-struct") {
+            content.innerHTML = renderStructTable(layout, "answer", ansArr) + gfHtml;
+        } else if (organicDir === "name-to-formula") {
+            content.innerHTML = `<div style="font-size:2em; font-family:serif; font-weight:bold; color:var(--secondary);">${formulaStr}</div>${gfHtml}`;
+        } else {
+            content.innerHTML = `<div style="font-size:2em; font-weight:bold;">${getQName(q)}</div>${gfHtml}`;
+        }
+
+        const expHtml = buildExplanationHtml(q);
+        if (expHtml) {
+            content.innerHTML += `<div style="margin-top:15px; width:100%; box-sizing:border-box;">${expHtml}</div>`;
+        }
+    }
+
+    function hideFcAnswer() {
+        document.getElementById('fc-back').classList.add('hidden');
+        document.getElementById('fc-front').classList.remove('hidden');
+    }
+
+    function gradeFc(ok) {
+        if (ok) score++;
+        else wrongQuestions.push(quizList[currentIndex]);
+        nextQuestion();
+    }
+
+    function createOption(html, isCorrect, correctText) {
+        const div = document.createElement('div');
+        div.className = 'option-btn';
+        div.innerHTML = html;
+        div.onclick = () => {
+            if (!document.getElementById('next-btn').classList.contains('hidden')) return;
+            const msg = document.getElementById('result-msg');
+            msg.style.display = 'block';
+            msg.className = 'result-message ' + (isCorrect ? 'correct' : 'wrong');
+            msg.innerHTML = isCorrect ? "正解！" : `不正解... 正解は: ${correctText}`;
+
+            const q = quizList[currentIndex];
+            msg.innerHTML += buildExplanationHtml(q);
+
+            if (isCorrect) score++;
+            else wrongQuestions.push(q);
+            document.getElementById('next-btn').classList.remove('hidden');
+
+            const container = div.parentElement;
+            if (container) {
+                container.querySelectorAll('.option-btn').forEach(btn => {
+                    if (btn === div) {
+                        btn.style.backgroundColor = isCorrect ? "#d1fae5" : "#fee2e2";
+                        btn.style.borderColor = isCorrect ? "var(--correct)" : "var(--wrong)";
+                    } else {
+                        btn.style.opacity = "0.38";
+                        btn.style.pointerEvents = "none";
+                    }
+                });
+            }
+        };
+        return div;
+    }
+
+    function nextQuestion() { currentIndex++; if (currentIndex < quizList.length) loadQuestion(); else showResult(); }
+
+    function showResult() {
+        showScreen('result');
+        document.getElementById('score-display').textContent = score;
+        document.getElementById('score-total').textContent = quizList.length;
+
+        const percentage = (score / quizList.length) * 100;
+        let c = "";
+        if (percentage === 100) c = "完璧です！素晴らしい！";
+        else if (percentage >= 80) c = "あと少し！";
+        else c = "繰り返し復習しましょう。";
+        document.getElementById('score-comment').textContent = c;
+
+        const retrySection = document.getElementById('retry-section');
+        const wrongContainer = document.getElementById('wrong-list-container');
+        wrongContainer.innerHTML = '';
+
+        if (wrongQuestions.length > 0) {
+            retrySection.classList.remove('hidden');
+            wrongQuestions.forEach(q => {
+                const item = document.createElement('div');
+                item.style.marginBottom = "10px";
+                item.style.padding = "10px";
+                item.style.backgroundColor = "#fee2e2";
+                item.style.borderRadius = "6px";
+
+                const isCond = (window._organicCondensed !== undefined) ? window._organicCondensed : document.getElementById('organic-condensed').checked;
+                const layout = getLayoutForQuestion(q);
+                const ansArr = extractAnswersFromLayout(layout);
+                const formulaStr = isCond ? q.formula_c : q.formula_f;
+
+                let structHtml = layout ? renderStructTable(layout, "answer", ansArr) : `<div style="font-family:serif; font-weight:bold; margin-top:5px;">${q.eq || ''}</div>`;
+
+                if (organicDir === "name-to-struct") {
+                    item.innerHTML = `
+                        <div style="font-size:0.8em; margin-bottom:5px;">${q.group}</div>
+                        <div style="font-weight:bold;">${getQName(q)}</div>
+                        <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解:</div>
+                        ${structHtml}
+                    `;
+                } else if (organicDir === "name-to-formula") {
+                    item.innerHTML = `
+                        <div style="font-size:0.8em; margin-bottom:5px;">${q.group}</div>
+                        <div style="font-weight:bold;">${getQName(q)}</div>
+                        <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解: <span style="font-family:serif; font-size:1.2em;">${formulaStr}</span></div>
+                    `;
+                } else if (organicDir === "struct-to-name") {
+                    item.innerHTML = `
+                        <div style="font-size:0.8em; margin-bottom:5px;">${q.group}</div>
+                        ${structHtml}
+                        <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解: ${getQName(q)}</div>
+                    `;
+                } else if (organicDir === "formula-to-name") {
+                    item.innerHTML = `
+                        <div style="font-size:0.8em; margin-bottom:5px;">${q.group}</div>
+                        <div style="font-family:serif; font-weight:bold; font-size:1.5em; margin-top:5px;">${formulaStr}</div>
+                        <div style="margin-top:5px; font-size:0.9em; color:var(--wrong); font-weight:bold;">正解: ${getQName(q)}</div>
+                    `;
+                }
+                wrongContainer.appendChild(item);
+            });
+        } else {
+            retrySection.classList.add('hidden');
+        }
+    }
+
+    function goHome() { showScreen('home'); }
+    function goHomeConfirm() { if(confirm("ホームに戻りますか？")) goHome(); }
+    function showScreen(name) { Object.values(screens).forEach(s => s.classList.add('hidden')); screens[name].classList.remove('hidden'); window.scrollTo(0,0); }
+
+    function showDataList() {
+        const container = document.getElementById('full-list-container');
+        container.innerHTML = rawData.map(item => {
+            const m = item.group.match(/^有機化学\((.+)\)$/);
+            let badgeText = m ? m[1] : item.group;
+
+            const cb = document.getElementById('organic-condensed');
+            const isCond = cb ? cb.checked : false;
+            let displayEq = isCond ? (item.formula_c || item.name) : (item.formula_f || item.name);
+
+            const gf = generalFormulaMap[item.group];
+            if(gf) {
+                badgeText += ` <span style="color:#10b981;">(一般式の例: ${gf})</span>`;
+            }
+
+            return `
+            <div style="background:white; padding:10px; margin-bottom:5px; border-radius:5px; border:1px solid #ddd;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:bold;">🌿 <span style="font-family:serif;">${displayEq}</span></div>
+                    <span class="group-badge" style="background-color:#d1fae5; color:#065f46; font-size:0.7em; padding:2px 5px; border-radius:4px; white-space:nowrap; margin-left:10px;">${badgeText}</span>
+                </div>
+                <div style="font-size:0.9em; color:#444; margin-top:5px;">${item.name}</div>
+            </div>
+            `;
+        }).join('');
+        showScreen('list');
+    }
+</script>
+</body>
+</html>

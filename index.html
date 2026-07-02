@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メインホームページ</title>
+    <style>
+        /* 💡 簡単なデザイン（CSS）も含まれています */
+        body {
+            font-family: sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            text-align: center;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        p {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .btn {
+            display: block;
+            padding: 15px;
+            text-decoration: none;
+            color: #ffffff;
+            background-color: #3498db;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        /* 2つのボタンの色を少し変えたい場合はここを調整 */
+        .btn-tanchemoti {
+            background-color: #2ecc71;
+        }
+        .btn-tanchemoti:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ポータルサイトへようこそ</h1>
+        <p>ご覧になりたいサイトを選択してください。</p>
+
+        <div class="links">
+            <a href="https://sithigh21147.github.io/chemoti/tanchemoti/" class="btn btn-tanchemoti">
+                tanchemoti (有機版)
+            </a>
+            
+            <a href="https://sithigh21147.github.io/chemoti/hemoti/" class="btn">
+                hemoti (無機版)
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
